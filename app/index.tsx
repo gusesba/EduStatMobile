@@ -1,13 +1,14 @@
-import { Text, View, StyleSheet} from 'react-native';
-import {Button} from 'react-native-paper';
+import { Link, router } from 'expo-router';
+import { View, StyleSheet} from 'react-native';
+import {Button, Text} from 'react-native-paper';
 
 export default function Index() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Edustat</Text>
+      <Text variant='displayLarge'>EduStat</Text>
       <View style={styles.buttons}>
-        <Button mode='elevated'>Login</Button>
-        <Button mode='outlined'>Home</Button>
+        <Button onPress={()=>router.navigate("/login")} mode='contained' style={styles.button}>Login</Button>
+        <Button onPress={()=>router.navigate("/potentiostat")} mode='contained-tonal' style={styles.button}>Local Use</Button>
       </View>
     </View>
   );
@@ -16,7 +17,6 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
     alignItems: 'center',
     paddingTop: 100
 
@@ -28,7 +28,10 @@ const styles = StyleSheet.create({
   buttons: {
     flex: 1,
     justifyContent:'center',
-    gap: 10
+    gap: 20
+  },
+  button: {
+    width: 200
   }
   
 });
