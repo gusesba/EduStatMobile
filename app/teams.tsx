@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, Modal, TextInput, BottomNavigation, Text } from 'react-native-paper';
-import { createTeam, getInvites, getTeams, getUsers, sendInvite } from './libs/teams';
+import { acceptInvite, createTeam, getInvites, getTeams, getUsers, sendInvite } from './libs/teams';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
+import { getTeamExperiments } from './libs/experiments';
 
 export default function Teams() {
   const [teamName, setTeamName] = useState("");
   const [visible, setVisible] = useState(false);
   const [visibleAddMember, setVisibleAddMember] = useState(false);
+  const [visibleAddExperiment, setVisibleAddExperiment] = useState(false);
   const [index, setIndex] = useState(0);
   const [selectedTeam, setSelectedTeam] = useState("")
   const [addUserEmail, setAddUserEmail] = useState("")
@@ -20,6 +22,7 @@ export default function Teams() {
   ]);
   const [teams,setTeams] = useState<{name:string,id:string}[]>([])
   const [users,setUsers] = useState<{name:string}[]>([])
+  const [experiments,setExperiments] = useState<{name:string}[]>([])
   const [invites,setInvites] = useState<{id:string,role:string,Team:{
     name:string
   }}[]>([])
@@ -33,6 +36,7 @@ export default function Teams() {
   },[])
   useEffect(()=>{
     getTeamUsersHandler()
+    getTeamExperimentsHandler()
   },[selectedTeam])
 
   const showModal = () => setVisible(true);
@@ -44,6 +48,11 @@ export default function Teams() {
   const showAddMemberModal = () => setVisibleAddMember(true);
   const hideAddMemberModal = () => {
     setVisibleAddMember(false);
+  };
+
+  const showAddExperimentModal = () => setVisibleAddExperiment(true);
+  const hideAddExperimentModal = () => {
+    setVisibleAddExperiment(false);
   };
 
   const handleAddUser = async () => {
@@ -62,6 +71,7 @@ export default function Teams() {
       alert("Team created successfully!");
       setTeamName("");
       hideModal();
+      getTeamsHandler();
     } else {
       alert("Unknown Error!");
     }
@@ -83,6 +93,27 @@ export default function Teams() {
     if(status == 200)
       {
         setUsers(users)
+      }
+      else
+        alert("Unknown Error!")
+  }
+
+  const getTeamExperimentsHandler = async () => {
+    const [experiments,status] = await getTeamExperiments(selectedTeam)
+    if(status == 200)
+      {
+        setExperiments(experiments)
+      }
+      else
+        alert("Unknown Error!")
+  }
+
+  const handleAcceptInvite = async (id:string) => {
+    const [_,status] = await acceptInvite(id);
+      if(status == 200)
+      {
+        getInvitesHandler()
+        getTeamsHandler()
       }
       else
         alert("Unknown Error!")
@@ -127,7 +158,16 @@ export default function Teams() {
       <View style={styles.tabTeamContent}>
       {invites.length > 0 ? (
         invites.map((invite,index) => {
-          return <View key={index} style={styles.teamName}><Text>{invite.id}</Text></View>
+          return <View key={index} style={styles.inviteRow}>
+          <Text style={styles.inviteText}>{invite.Team.name}</Text>
+          <Button
+            mode="contained"
+            onPress={() => handleAcceptInvite(invite.id)}
+            style={styles.acceptButton}
+          >
+            Accept
+          </Button>
+        </View>
         })
       ) : (
         <Text>You have no invites</Text>
@@ -158,10 +198,27 @@ export default function Teams() {
     </>
     ),
     experiments: () => (
-      <View style={styles.tabContent}>
-        {selectedTeam == "" ? (<Text>No team selected.</Text>):(<Text>Experiments information will show up here.</Text>)}
-        
-      </View>
+      <>
+      <View style={styles.tabTeamContent}>
+      {experiments.length > 0 ? (
+        experiments.map((experiment,index) => {
+          return <View key={index} style={styles.teamName}><Text>{experiment.name}</Text></View>
+        })
+      ) : (
+        <Text>No experiments available on the team</Text>
+      )}
+    </View>
+    {selectedTeam != "" &&
+    <Button
+    style={styles.addBtn}
+    mode="contained"
+    labelStyle={styles.plusSign}
+    onPress={showAddExperimentModal}
+    >
+      +
+    </Button>
+  }
+    </>
     ),
   });
 
@@ -276,6 +333,24 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     marginBottom: 15,
+  },
+  inviteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 15,
+    backgroundColor: '#eee',
+    width: '100%',
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  inviteText: {
+    flex: 1, // Allow text to take remaining space
+    marginRight: 10,
+    fontSize: 16,
+  },
+  acceptButton: {
+    flexShrink: 0, // Prevent the button from resizing
   },
 
 });

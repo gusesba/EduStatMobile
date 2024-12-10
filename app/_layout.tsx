@@ -3,10 +3,10 @@ import {
   MD3LightTheme as DefaultTheme,
   PaperProvider,
 } from 'react-native-paper';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import NotAuthenticatedDrawer from '@/components/drawers/notAuthenticatedDrawer';
 import AuthenticatedDrawer from '@/components/drawers/authenticatedDrawer';
-import { getValueForStore } from './libs/secureStore';
+import { requestPermissions } from '@/hooks/useBle';
 
 
 const theme = {
@@ -19,15 +19,9 @@ const theme = {
   },
 };
 
+requestPermissions();
+
 export default function RootLayout() {
-  useEffect(()=> {
-    getValueForStore('user_token').then((result)=> {
-      if(result)
-        setIsAuthenticated(true);
-      else
-        setIsAuthenticated(true);
-    })
-  },[])
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   if(!isAuthenticated) {
     return (

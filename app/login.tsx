@@ -1,20 +1,19 @@
-import { router, useFocusEffect } from 'expo-router';
-import {  useState } from 'react';
+import { router, useFocusEffect} from 'expo-router';
+import {  useCallback, useState } from 'react';
 import { View, StyleSheet} from 'react-native';
 import {Button, Text, TextInput} from 'react-native-paper';
-import { removeStore, saveStore } from './libs/secureStore';
 import { login } from './libs/login';
 
 export default function Login() {
   const [text, setText] = useState("");
   const [password, setPassword] = useState("");
 
+
   const loginHandler = async () => {
     const status = await login(text,password);
 
     if(status == 201)
     {
-      alert("Welcome back")
       router.navigate('/potentiostat')
     }
     else if(status == 400)

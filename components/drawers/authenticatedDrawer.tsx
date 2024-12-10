@@ -9,6 +9,7 @@ import Simulation from '@/app/simulation';
 import { Ionicons } from '@expo/vector-icons';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Teams from '@/app/teams';
+import Chatbot from '@/app/chatbot';
 const Drawer = createDrawerNavigator();
 
 export default function AuthenticatedDrawer(){
@@ -34,7 +35,7 @@ export default function AuthenticatedDrawer(){
           <Ionicons name="beaker-outline" color={color} size={size} />
         )}}/>
       
-        <Drawer.Screen name="educhat" component={Educhat} options={{ title:'EduChat',drawerIcon: ({ color, size }) => (
+        <Drawer.Screen name="educhat" component={Chatbot} options={{ title:'EduChat',drawerIcon: ({ color, size }) => (
           <Ionicons name="chatbubbles-outline" color={color} size={size} />)}}
         />
         <Drawer.Screen name="simulation" component={Simulation} options={{title:'Simulation', drawerIcon:({color,size})=> (
@@ -49,6 +50,9 @@ export default function AuthenticatedDrawer(){
         <Drawer.Screen name="login" component={Login} options={{headerShown:false, title:'Logout', drawerIcon:({color,size})=>(
            <Ionicons name="arrow-back-circle-outline" color={color} size={size} />
         )}}/>
+        {/* <Drawer.Screen name="chatbot" component={Chatbot} options={{title:'Chatbot', drawerIcon:({color,size})=>(
+           <Ionicons name="arrow-back-circle-outline" color={color} size={size} />
+        )}}/> */}
         
       </Drawer.Navigator>
        

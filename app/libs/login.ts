@@ -14,7 +14,10 @@ export const login = async (email:string,password:string) => {
       }
     });
     if(response.status == 201)
+    {
         await saveStore('user_token',response.data.token)
+        await saveStore('user_id',response.data.id)
+    }
 
     return response.status 
     }
