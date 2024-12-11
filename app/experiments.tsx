@@ -26,6 +26,7 @@ export type TExperiment = {
 export default function Experiment(){
   const [index, setIndex] = useState(0);
   const [selectedExperiments, setSelectedExperiments] = useState<TExperiment[]>([])
+  const [meanExperiments, setMeanExperiments] = useState<TExperiment[]>([])
   const [routes] = useState([
     { key: 'experiments', title: 'Experiments', icon: 'account-group' },
     { key: 'notes', title: 'Notes', icon: 'account-group' },
@@ -79,7 +80,7 @@ export default function Experiment(){
     </>
     ),
   graph: () => {
-    return <View><GraphScreen experiments={selectedExperiments}/><Button onPress={handleCalculateMean}>Mean</Button></View>
+    return <View><GraphScreen experiments={selectedExperiments.concat(meanExperiments)}/><Button onPress={handleCalculateMean}>Mean</Button></View>
   },
   notes: () => (
     <>
@@ -95,8 +96,12 @@ export default function Experiment(){
 
 const handleCalculateMean = () => {
   const meanPoints = calculateMeanGraphFromExperiments(selectedExperiments);
-  setSelectedExperiments(selectedExperiments.concat([{name:'mean',graphData:{points:meanPoints}} as TExperiment]))
+  setMeanExperiments([{name:'mean',graphData:{points:meanPoints}} as TExperiment])
 }
+
+useEffect(()=>{
+  setMeanExperiments([])
+},[selectedExperiments])
 
 function interpolateY(points: { x: number; y: number }[], x: number): number {
   for (let i = 0; i < points.length - 1; i++) {
