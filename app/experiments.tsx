@@ -1,9 +1,10 @@
 import { GraphScreen } from "@/components/graphComponent";
 import { useEffect, useState } from "react";
-import { getUserExperiments } from "./libs/experiments";
+import { deleteJsonFile, getUserExperiments, readEdsJsonFiles, saveJsonToFile } from "./libs/experiments";
 import { StyleSheet, View } from "react-native";
 import { BottomNavigation, Text } from "react-native-paper";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { isUserLogged } from "./libs/login";
 
 export type TExperiment = {
   id:string,
@@ -31,11 +32,31 @@ export default function Experiment(){
     { key: 'graph', title: 'Graph', icon: 'account-group' },
   ]);
   const [experiments,setExperiments] = useState<TExperiment[]>([]);
+  const [localExperiments,setLocalExperiments] = useState<TExperiment[]>([]);
+
+  const [userLogged, setUserLogged] = useState<string|null|undefined>(null);
+
+  useEffect(()=>{
+    isUserLogged().then((a)=>{
+      setUserLogged(a);
+    })
+  },[])
 
   const renderScene = BottomNavigation.SceneMap({
     experiments: () => (
       <>
       <View style={styles.tabTeamContent}>
+        <Text style={styles.noteTitle}>Local Experiments</Text>
+        {localExperiments.length > 0 ? (
+          localExperiments.map((experiment) => {
+             if(selectedExperiments.find((x)=>x.id==experiment.id))
+               return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity onPress={()=>{setSelectedExperiments((experiments)=>experiments.filter((ex)=>ex.id!=experiment.id))}}><Text>{experiment.name}</Text></TouchableOpacity></View>
+            return <View key={experiment.id} style={{width:"100%"}}><TouchableOpacity onPress={()=>setSelectedExperiments((experiments)=>[...experiments,experiment])} style={styles.teamName}><Text>{experiment.name}</Text></TouchableOpacity></View>
+          })
+        ) : (
+          <Text>No Local Experiments Available.</Text>
+        )}
+        <Text style={styles.noteTitle}>User Experiments</Text>
         {experiments.length > 0 ? (
           experiments.map((experiment) => {
              if(selectedExperiments.find((x)=>x.id==experiment.id))
@@ -64,7 +85,13 @@ export default function Experiment(){
 })
 
   useEffect(()=>{
-    handleGetUserExperiments();
+    if(userLogged){
+      handleGetUserExperiments();
+    }
+  },[userLogged])
+
+  useEffect(()=>{
+    handleGetLocalExperiments();
   },[])
   const handleGetUserExperiments = async () => {
     const [data,status] = await getUserExperiments();
@@ -73,6 +100,11 @@ export default function Experiment(){
     {
       setExperiments(data);
     }
+  }
+
+  const handleGetLocalExperiments = async () => {
+    const exp = await readEdsJsonFiles();
+    setLocalExperiments(exp);
   }
 
   return <BottomNavigation
@@ -102,5 +134,5 @@ const styles = StyleSheet.create({
   noteTitle:{
     fontSize:20,
     fontWeight:'bold'
-  }
+  },
 })

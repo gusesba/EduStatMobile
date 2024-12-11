@@ -25,8 +25,8 @@ interface CyclicVoltammetryGraphProps {
 
 const CyclicVoltammetryGraph: React.FC<CyclicVoltammetryGraphProps> = ({
   datasets,
-  width = 300,
-  height = 300,
+  width = 400,
+  height = 400,
   margin = 40,
 }) => {
   // Achando os valores globais mínimo e máximo
