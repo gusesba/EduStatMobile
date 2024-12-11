@@ -1,8 +1,8 @@
 import { GraphScreen } from "@/components/graphComponent";
 import { useEffect, useState } from "react";
-import { deleteJsonFile, getUserExperiments, readEdsJsonFiles, saveJsonToFile } from "./libs/experiments";
+import { deleteJsonFile, deleteUserExperiment, getUserExperiments, readEdsJsonFiles, saveJsonToFile } from "./libs/experiments";
 import { StyleSheet, View } from "react-native";
-import { BottomNavigation, IconButton, Text } from "react-native-paper";
+import { BottomNavigation, Button, IconButton, Text } from "react-native-paper";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { isUserLogged } from "./libs/login";
 
@@ -46,6 +46,11 @@ export default function Experiment(){
     deleteJsonFile(id).then(()=>handleGetLocalExperiments());
   }
 
+  const handleDeleteUser = async (id:string) => {
+    const [data,status] = await deleteUserExperiment(id);
+    handleGetUserExperiments();
+  }
+
   const renderScene = BottomNavigation.SceneMap({
     experiments: () => (
       <>
@@ -64,8 +69,8 @@ export default function Experiment(){
         {experiments.length > 0 ? (
           experiments.map((experiment) => {
              if(selectedExperiments.find((x)=>x.id==experiment.id))
-               return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity onPress={()=>{setSelectedExperiments((experiments)=>experiments.filter((ex)=>ex.id!=experiment.id))}}><Text>{experiment.name}</Text></TouchableOpacity></View>
-            return <View key={experiment.id} style={{width:"100%"}}><TouchableOpacity onPress={()=>setSelectedExperiments((experiments)=>[...experiments,experiment])} style={styles.teamName}><Text>{experiment.name}</Text></TouchableOpacity></View>
+               return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity  style={{padding:15}}  onPress={()=>{setSelectedExperiments((experiments)=>experiments.filter((ex)=>ex.id!=experiment.id))}}><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={()=>handleDeleteUser(experiment.id)} style={{height:20,margin:0}} icon="delete"/></View>
+            return <View key={experiment.id} style={styles.teamName}><TouchableOpacity  style={{padding:15}} onPress={()=>setSelectedExperiments((experiments)=>[...experiments,experiment])} ><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={()=>handleDeleteUser(experiment.id)} style={{height:20,margin:0}} icon="delete"/></View>
           })
         ) : (
           <Text>No User Experiments Available.</Text>
@@ -74,7 +79,7 @@ export default function Experiment(){
     </>
     ),
   graph: () => {
-    return <GraphScreen experiments={selectedExperiments}/>
+    return <View><GraphScreen experiments={selectedExperiments}/><Button onPress={handleCalculateMean}>Mean</Button></View>
   },
   notes: () => (
     <>
@@ -87,6 +92,47 @@ export default function Experiment(){
     </>
   )
 })
+
+const handleCalculateMean = () => {
+  const meanPoints = calculateMeanGraphFromExperiments(selectedExperiments);
+  setSelectedExperiments(selectedExperiments.concat([{name:'mean',graphData:{points:meanPoints}} as TExperiment]))
+}
+
+function interpolateY(points: { x: number; y: number }[], x: number): number {
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    if (x >= p1.x && x <= p2.x) {
+      // Linear interpolation formula
+      return p1.y + ((x - p1.x) * (p2.y - p1.y)) / (p2.x - p1.x);
+    }
+  }
+  // If x is out of bounds, return the nearest y-value
+  return x < points[0].x ? points[0].y : points[points.length - 1].y;
+  }
+
+  // Function to calculate the mean graph from a list of TExperiment objects
+  function calculateMeanGraphFromExperiments(experiments: TExperiment[]): { x: number; y: number }[] {
+  if (!experiments || experiments.length === 0) {
+    throw new Error("Experiment list cannot be empty.");
+  }
+
+  // Combine all unique x-values from the graphs
+  const xValues = [
+    ...new Set(
+      experiments.flatMap(exp => exp.graphData.points.map(point => point.x))
+    ),
+  ].sort((a, b) => a - b);
+
+  // Calculate mean points
+  const meanPoints = xValues.map(x => {
+    const yValues = experiments.map(exp => interpolateY(exp.graphData.points, x));
+    const meanY = yValues.reduce((sum, y) => sum + y, 0) / yValues.length;
+    return { x, y: meanY };
+  });
+
+  return meanPoints;
+}
 
   useEffect(()=>{
     if(userLogged){

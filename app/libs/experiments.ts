@@ -50,6 +50,31 @@ export const getTeamExperiments = async (teamId:string) => {
     }
 }
 
+export const deleteUserExperiment = async (experimentId:string) => {
+  const user_token = await getValueForStore('user_token'); 
+  if (!user_token) {
+      alert("User must be signed in!");
+      return [[],0];
+  }
+
+  try {
+      const response = await axios({
+          method:'post',
+          url: baseUrl + '/delete-user-experiment',
+          headers: {
+              Authorization: `Bearer ${user_token}` // Adiciona o token no cabeçalho
+          },
+          data:{
+              experimentId
+          }
+      })
+      return [response.data,response.status]
+  }
+  catch (error: any) {
+      return [error,error.response?.status || 500]; // Retorna 500 como fallback se `response` não existir
+  }
+}
+
 export const readJsonFromFile = async (filename:string) => {
     const fileUri = `${FileSystem.documentDirectory}${filename}`;
     console.log('Reading file from:', fileUri);
