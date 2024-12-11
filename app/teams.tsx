@@ -12,7 +12,6 @@ export default function Teams() {
   const [teamName, setTeamName] = useState("");
   const [visible, setVisible] = useState(false);
   const [visibleAddMember, setVisibleAddMember] = useState(false);
-  const [visibleAddExperiment, setVisibleAddExperiment] = useState(false);
   const [index, setIndex] = useState(0);
   const [selectedTeam, setSelectedTeam] = useState("")
   const [addUserEmail, setAddUserEmail] = useState("")
@@ -62,11 +61,6 @@ export default function Teams() {
   const showAddMemberModal = () => setVisibleAddMember(true);
   const hideAddMemberModal = () => {
     setVisibleAddMember(false);
-  };
-
-  const showAddExperimentModal = () => setVisibleAddExperiment(true);
-  const hideAddExperimentModal = () => {
-    setVisibleAddExperiment(false);
   };
 
   const handleAddUser = async () => {
@@ -155,7 +149,7 @@ export default function Teams() {
             return <View key={team.id} style={{width:"100%"}}><TouchableOpacity onPress={()=>setSelectedTeam(team.id)} style={styles.teamName}><Text>{team.name}</Text></TouchableOpacity></View>
           })
         ) : (
-          <Text>No teams available. Create one using the "+" button.</Text>
+          <View style={styles.container2}><Text style={styles.text}>No teams available. Create one using the "+" button.</Text></View>
         )}
       </View>
       <Button
@@ -184,7 +178,7 @@ export default function Teams() {
         </View>
         })
       ) : (
-        <Text>You have no invites</Text>
+        <View style={styles.container2}><Text style={styles.text}>You have no invites</Text></View>
       )}
     </View>
     ),
@@ -196,7 +190,7 @@ export default function Teams() {
           return <View key={index} style={styles.teamName}><Text>{user.name}</Text></View>
         })
       ) : (
-        <Text>No users available on the team</Text>
+        <View style={styles.container2}><Text style={styles.text}>No users available on the team</Text></View>
       )}
     </View>
     {selectedTeam != "" &&
@@ -219,19 +213,10 @@ export default function Teams() {
           return <View key={index} style={styles.teamName}><Text>{experiment.name}</Text></View>
         })
       ) : (
-        <Text>No experiments available on the team</Text>
+        <View style={styles.container2}><Text style={styles.text}>No experiments available on the team</Text></View>
       )}
     </View>
-    {selectedTeam != "" &&
-    <Button
-    style={styles.addBtn}
-    mode="contained"
-    labelStyle={styles.plusSign}
-    onPress={showAddExperimentModal}
-    >
-      +
-    </Button>
-  }
+    
     </>
     ),
   });
@@ -368,6 +353,17 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     flexShrink: 0,
+  },
+  container2: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+    width: '100%'
+  },
+  text: {
+    marginBottom: 16, // Spacing between the text and button
+    textAlign: 'center', // Center the text content
   },
 
 });
