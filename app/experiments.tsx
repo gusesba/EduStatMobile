@@ -2,7 +2,7 @@ import { GraphScreen } from "@/components/graphComponent";
 import { useEffect, useState } from "react";
 import { deleteJsonFile, getUserExperiments, readEdsJsonFiles, saveJsonToFile } from "./libs/experiments";
 import { StyleSheet, View } from "react-native";
-import { BottomNavigation, Text } from "react-native-paper";
+import { BottomNavigation, IconButton, Text } from "react-native-paper";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { isUserLogged } from "./libs/login";
 
@@ -42,6 +42,10 @@ export default function Experiment(){
     })
   },[])
 
+  const handleDeleteLocal = (id:string) => {
+    deleteJsonFile(id).then(()=>handleGetLocalExperiments());
+  }
+
   const renderScene = BottomNavigation.SceneMap({
     experiments: () => (
       <>
@@ -50,8 +54,8 @@ export default function Experiment(){
         {localExperiments.length > 0 ? (
           localExperiments.map((experiment) => {
              if(selectedExperiments.find((x)=>x.id==experiment.id))
-               return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity onPress={()=>{setSelectedExperiments((experiments)=>experiments.filter((ex)=>ex.id!=experiment.id))}}><Text>{experiment.name}</Text></TouchableOpacity></View>
-            return <View key={experiment.id} style={{width:"100%"}}><TouchableOpacity onPress={()=>setSelectedExperiments((experiments)=>[...experiments,experiment])} style={styles.teamName}><Text>{experiment.name}</Text></TouchableOpacity></View>
+               return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity style={{padding:15}} onPress={()=>{setSelectedExperiments((experiments)=>experiments.filter((ex)=>ex.id!=experiment.id))}}><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={()=>handleDeleteLocal(experiment.id)} style={{height:20,margin:0}} icon="delete"/></View>
+            return <View key={experiment.id} style={styles.teamName}><TouchableOpacity style={{padding:15}} onPress={()=>setSelectedExperiments((experiments)=>[...experiments,experiment])}><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={()=>handleDeleteLocal(experiment.id)} style={{height:20,margin:0}} icon="delete"/></View>
           })
         ) : (
           <Text>No Local Experiments Available.</Text>
@@ -64,7 +68,7 @@ export default function Experiment(){
             return <View key={experiment.id} style={{width:"100%"}}><TouchableOpacity onPress={()=>setSelectedExperiments((experiments)=>[...experiments,experiment])} style={styles.teamName}><Text>{experiment.name}</Text></TouchableOpacity></View>
           })
         ) : (
-          <Text>No Experiments Available.</Text>
+          <Text>No User Experiments Available.</Text>
         )}
       </View>
     </>
@@ -122,14 +126,19 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   teamNameSelected: {
-    padding:15,
     backgroundColor: '#ddd',
-    width: '100%'
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   teamName: {
-    padding:15,
     backgroundColor: '#eee',
-    width: '100%'
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    
   },
   noteTitle:{
     fontSize:20,
