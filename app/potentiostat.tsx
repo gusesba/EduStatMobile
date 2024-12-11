@@ -6,7 +6,6 @@ import { Base64 } from "js-base64";
 import { TextInput } from "react-native-paper";
 
 export const bleManager = new BleManager();
-let showDevicesWithoutName = false;
 const DATA_SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"; // * Get from the device manufacturer - 9800 for the BLE iOs Tester App "MyBLESim"
 const CHARACTERISTIC_UUID = "6d68efe5-04b6-4a85-abc4-c2670b7bf7fd"; // * Get from the device manufacturer - 9801-9805 for the BLE iOs Tester App "MyBLESim"
 const CHARACTERISTIC_UUID_Param = "f27b53ad-c63d-49a0-8c0f-9f297e6cc520"; // * Get from the device manufacturer - 9801-9805 for the BLE iOs Tester App "MyBLESim"
@@ -15,7 +14,10 @@ export default function Potentiostat() {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [dataReceived, setDataReceived] = useState<string>("...waiting.");
-  const [messageToSend, setMessageToSend] = useState<string>("");
+  const [minVoltage, setMinVoltage] = useState<string>("");
+  const [maxVoltage, setMaxVoltage] = useState<string>("");
+  const [step, setStep] = useState<string>("");
+  const [delay, setDelay] = useState<string>("");
 
   // Managers Central Mode - Scanning for devices
   const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
@@ -56,11 +58,6 @@ export default function Potentiostat() {
       return;
     }
 
-    // * IMPORTANT: The BLE iOs App "MyBLESim" is taking the input value, converting into asc2, and sending the base64 encoded value
-    // * So, to get 4, I should insert 52 in the app, and it will send the base64 encoded value of 4
-    // * To get 7, I should insert 55 in the app, and it will send the base64 encoded value of 7
-    // * and so on...
-
     const dataInput = Base64.decode(characteristic.value);
     setDataReceived(dataInput);
   };
@@ -81,13 +78,13 @@ export default function Potentiostat() {
   async function sendMessageToDevice() {
     if (connectedDevice) {
       try {
-        const encodedMessage = Base64.encode(messageToSend);
+        const encodedMessage = Base64.encode(`${minVoltage} ${maxVoltage} ${step} ${delay} 1`);
         await connectedDevice.writeCharacteristicWithResponseForService(
           DATA_SERVICE_UUID,
           CHARACTERISTIC_UUID_Param,
           encodedMessage
         );
-        console.log("Message sent:", messageToSend);
+        console.log("Message sent:", `${minVoltage} ${maxVoltage} ${step} ${delay} 1`);
       } catch (error) {
         console.error("Failed to send message:", error);
       }
@@ -99,26 +96,17 @@ export default function Potentiostat() {
   return (
     <>
       <View>
-        <Text style={styles.textTitle}>Central Mode</Text>
-        <Text style={styles.textTitle}>Listing Devices</Text>
+        <Text style={styles.textTitle}>Connect to your device</Text>
         <View style={styles.containerButtons}>
           <Button title="Start" onPress={scanForPeripherals} />
-          {/* TODO: Implement this button
         <Button
           title="Stop"
           onPress={() => {
             console.log("Stop Scanning");
-            bleManager.stopDeviceScan;
+            bleManager.stopDeviceScan();
           }}
-        /> */}
+        />
           <Button title="Clear" onPress={() => setAllDevices([])}></Button>
-          <Button
-            title={showDevicesWithoutName ? "Hide Nameless" : "Show Nameless"}
-            onPress={() => {
-              showDevicesWithoutName = !showDevicesWithoutName;
-              setAllDevices([...allDevices]);
-              // !DEBUG: console.warn("Showing Devices Nameless: ", showDevicesWithoutName);
-            }}></Button>
         </View>
         
           {allDevices.map((device) => {
@@ -143,13 +131,41 @@ export default function Potentiostat() {
             <Text>Data Received: {dataReceived} </Text>
           </View>
         </View>
-        <TextInput
-        style={styles.textInput}
-        placeholder="Type a message"
-        value={messageToSend}
-        onChangeText={setMessageToSend}
-      />
-      <Button title="Send Message" onPress={sendMessageToDevice} />
+        <View style={styles.containerScreen2}>
+      <View style={styles.inputContainer}>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.textInput2}
+            placeholder="Min Voltage"
+            value={minVoltage}
+            onChangeText={setMinVoltage}
+          />
+          <TextInput
+            style={styles.textInput2}
+            placeholder="Max Voltage"
+            value={maxVoltage}
+            onChangeText={setMaxVoltage}
+          />
+        </View>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.textInput2}
+            placeholder="Step"
+            value={step}
+            onChangeText={setStep}
+          />
+          <TextInput
+            style={styles.textInput2}
+            placeholder="Delay"
+            value={delay}
+            onChangeText={setDelay}
+          />
+        </View>
+      </View>
+      <View style={styles.buttonContainer}>
+        <Button title="Start Measurement" onPress={sendMessageToDevice} />
+      </View>
+    </View>
       </>
       )}
     </>
@@ -202,5 +218,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginVertical: 12,
     paddingHorizontal: 8,
+  },
+  containerScreen2: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "space-between",
+    padding: 24,
+  },
+  inputContainer: {
+    flexDirection: "column",
+    gap: 12,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  textInput2: {
+    flex: 1,
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    paddingHorizontal: 8,
+  },
+  buttonContainer: {
+    paddingVertical: 12,
   },
 });

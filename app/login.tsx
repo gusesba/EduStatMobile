@@ -1,8 +1,9 @@
-import { router, useFocusEffect} from 'expo-router';
-import {  useCallback, useState } from 'react';
+import { router} from 'expo-router';
+import {  useState } from 'react';
 import { View, StyleSheet} from 'react-native';
 import {Button, Text, TextInput} from 'react-native-paper';
 import { login } from './libs/login';
+import { removeStore } from './libs/secureStore';
 
 export default function Login() {
   const [text, setText] = useState("");
@@ -25,7 +26,12 @@ export default function Login() {
       alert("Unknown Error!")
     }
 
+  }
 
+  const handleLocalUse = async () => {
+    await removeStore('user_token')
+    await removeStore('user_id')
+    router.navigate('/potentiostat')
   }
   
   return (
@@ -51,7 +57,7 @@ export default function Login() {
         <Text variant='labelSmall' style={{alignSelf:'center', marginBottom:-10}}>First time?</Text>
         <Button onPress={()=>router.navigate('/register')} mode='contained-tonal' style={styles.button}>Sign Up</Button>
         <Text variant='labelSmall' style={{alignSelf:'center', marginBottom:-10}}>No connection?</Text>
-        <Button onPress={()=>router.navigate('/potentiostat')} mode='contained-tonal' style={styles.button}>Local Use</Button>
+        <Button onPress={handleLocalUse} mode='contained-tonal' style={styles.button}>Local Use</Button>
       </View>
     </View>
   );

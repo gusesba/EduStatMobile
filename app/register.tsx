@@ -2,10 +2,34 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View, StyleSheet} from 'react-native';
 import {Button, Text, TextInput} from 'react-native-paper';
+import { register } from './libs/login';
+import { removeStore } from './libs/secureStore';
 export default function Register() {
   const [text, setText] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+
+  const registerHandler = async () => {
+    const status = await register(text,password,name);
+
+    if(status == 201)
+    {
+      router.navigate('/login')
+    }
+    else
+    {
+      alert("Unknown Error!")
+    }
+
+
+  }
+
+  const handleLocalUse = async () => {
+    await removeStore('user_token')
+    await removeStore('user_id')
+    router.navigate('/potentiostat')
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title} variant='displayLarge'>Sign Up</Text>
@@ -31,11 +55,11 @@ export default function Register() {
         />
       </View>
       <View style={styles.buttons}>
-        <Button mode='contained' style={styles.button} onPress={()=>alert("Welcome!")}>Sign Up</Button>
+        <Button mode='contained' style={styles.button} onPress={registerHandler}>Sign Up</Button>
         <Text variant='labelSmall' style={{alignSelf:'center', marginBottom:-10}}>Been here?</Text>
         <Button onPress={()=>router.navigate('/login')} mode='contained-tonal' style={styles.button}>Sign In</Button>
         <Text variant='labelSmall' style={{alignSelf:'center', marginBottom:-10}}>No connection?</Text>
-        <Button onPress={()=>router.navigate('/potentiostat')} mode='contained-tonal' style={styles.button}>Local Use</Button>
+        <Button onPress={handleLocalUse} mode='contained-tonal' style={styles.button}>Local Use</Button>
       </View>
     </View>
   );

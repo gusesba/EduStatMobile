@@ -81,8 +81,6 @@ export default function Experiment(){
   renderScene={renderScene}
   shifting={false} // Shifting animation for active tabs
 />
-  if(experiments.length == 0) return <View></View>
-  return <GraphScreen experiments={experiments}/>
 }
 
 const styles = StyleSheet.create({

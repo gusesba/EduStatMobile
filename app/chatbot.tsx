@@ -6,6 +6,8 @@ import Markdown from 'react-native-markdown-display';
 import { baseUrl } from './libs/config';
 import { getValueForStore } from './libs/secureStore';
 import { useFocusEffect } from 'expo-router';
+import { isUserLogged } from './libs/login';
+import NotLogged from '@/components/NotLogged';
 
 
 export default function Chatbot() {
@@ -13,8 +15,15 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
+  const [userLogged, setUserLogged] = useState<string|null|undefined>(null);
+
+  useEffect(()=>{
+    isUserLogged().then((a)=>{
+      setUserLogged(a);
+    })
+  },[])
+
   const fetchUserId = async () => {
-    return 19;
     return getValueForStore('user_id');
   };
 
@@ -71,6 +80,9 @@ export default function Chatbot() {
       setLoading(false);
     }
   };
+
+  if(!userLogged)
+    return <NotLogged/>
 
   return (
     <View style={styles.container}>

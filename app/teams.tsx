@@ -5,6 +5,8 @@ import { acceptInvite, createTeam, getInvites, getTeams, getUsers, sendInvite } 
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Picker } from '@react-native-picker/picker';
 import { getTeamExperiments } from './libs/experiments';
+import { isUserLogged } from './libs/login';
+import NotLogged from '@/components/NotLogged';
 
 export default function Teams() {
   const [teamName, setTeamName] = useState("");
@@ -28,15 +30,27 @@ export default function Teams() {
   }}[]>([])
   const [selectedRole, setSelectedRole] = useState('VIEWER');
 
+  const [userLogged, setUserLogged] = useState<string|null|undefined>(null);
+
+  useEffect(()=>{
+    isUserLogged().then((a)=>{
+      setUserLogged(a);
+    })
+  },[])
+
 
 
   useEffect(() => {
-    getTeamsHandler()
-    getInvitesHandler()
-  },[])
+    if(userLogged){
+      getTeamsHandler()
+      getInvitesHandler()
+    }
+  },[userLogged])
   useEffect(()=>{
-    getTeamUsersHandler()
-    getTeamExperimentsHandler()
+    if(selectedTeam != ""){
+      getTeamUsersHandler()
+      getTeamExperimentsHandler()
+    }
   },[selectedTeam])
 
   const showModal = () => setVisible(true);
@@ -222,6 +236,9 @@ export default function Teams() {
     ),
   });
 
+  if(!userLogged)
+    return <NotLogged/>
+
   return (
     <>
       <BottomNavigation
@@ -345,12 +362,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   inviteText: {
-    flex: 1, // Allow text to take remaining space
+    flex: 1,
     marginRight: 10,
     fontSize: 16,
   },
   acceptButton: {
-    flexShrink: 0, // Prevent the button from resizing
+    flexShrink: 0,
   },
 
 });

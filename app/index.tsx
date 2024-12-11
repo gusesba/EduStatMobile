@@ -1,14 +1,22 @@
 import { Link, router } from 'expo-router';
 import { View, StyleSheet} from 'react-native';
 import {Button, Text} from 'react-native-paper';
+import { removeStore } from './libs/secureStore';
 
 export default function Index() {
+
+  const handleLocalUse = async () => {
+    await removeStore('user_token')
+    await removeStore('user_id')
+    router.navigate('/potentiostat')
+  }
+
   return (
     <View style={styles.container}>
       <Text variant='displayLarge'>EduStat</Text>
       <View style={styles.buttons}>
         <Button onPress={()=>router.navigate("/login")} mode='contained' style={styles.button}>Login</Button>
-        <Button onPress={()=>router.navigate("/potentiostat")} mode='contained-tonal' style={styles.button}>Local Use</Button>
+        <Button onPress={handleLocalUse} mode='contained-tonal' style={styles.button}>Local Use</Button>
       </View>
     </View>
   );

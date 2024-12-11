@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Text } from 'react-native-paper';
 
+
 export default function Educhat() {
   const [text, setText] = useState("");
+
 
   return (
     <View style={styles.container}>
