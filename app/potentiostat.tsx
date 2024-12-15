@@ -5,7 +5,7 @@ import { BleManager, Device, BleError, Characteristic } from "react-native-ble-p
 import { Base64 } from "js-base64";
 import { TextInput } from "react-native-paper";
 
-export const bleManager = new BleManager();
+//export const bleManager = new BleManager();
 const DATA_SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"; // * Get from the device manufacturer - 9800 for the BLE iOs Tester App "MyBLESim"
 const CHARACTERISTIC_UUID = "6d68efe5-04b6-4a85-abc4-c2670b7bf7fd"; // * Get from the device manufacturer - 9801-9805 for the BLE iOs Tester App "MyBLESim"
 const CHARACTERISTIC_UUID_Param = "f27b53ad-c63d-49a0-8c0f-9f297e6cc520"; // * Get from the device manufacturer - 9801-9805 for the BLE iOs Tester App "MyBLESim"
@@ -99,74 +99,74 @@ export default function Potentiostat() {
         <Text style={styles.textTitle}>Connect to your device</Text>
         <View style={styles.containerButtons}>
           <Button title="Start" onPress={scanForPeripherals} />
-        <Button
-          title="Stop"
-          onPress={() => {
-            console.log("Stop Scanning");
-            bleManager.stopDeviceScan();
-          }}
-        />
+          <Button
+            title="Stop"
+            onPress={() => {
+              console.log("Stop Scanning");
+              bleManager.stopDeviceScan();
+            }}
+          />
           <Button title="Clear" onPress={() => setAllDevices([])}></Button>
         </View>
-        
-          {allDevices.map((device) => {
-            if(device.name)
-              return <><Text>{device.name}</Text><Button
-            key={`button${device.id}`}
-            title="Connect"
-            onPress={() => connectToDevice(device)}
-          /></>
-            
-            return null
-          })}
-        
+
+        {allDevices.map((device) => {
+          if (device.name)
+            return <><Text>{device.name}</Text><Button
+              key={`button${device.id}`}
+              title="Connect"
+              onPress={() => connectToDevice(device)}
+            /></>
+
+          return null
+        })}
+
       </View>
       {connectedDevice && (
         <>
-        <View style={styles.containerConnectedDevice}>
-          <Text style={styles.textTitle}>Connected to Device: </Text>
-          <View style={styles.containerDevices}>
-            <Text>ID: {connectedDevice.id}</Text>
-            <Text>Name: {connectedDevice.name}</Text>
-            <Text>Data Received: {dataReceived} </Text>
+          <View style={styles.containerConnectedDevice}>
+            <Text style={styles.textTitle}>Connected to Device: </Text>
+            <View style={styles.containerDevices}>
+              <Text>ID: {connectedDevice.id}</Text>
+              <Text>Name: {connectedDevice.name}</Text>
+              <Text>Data Received: {dataReceived} </Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.containerScreen2}>
-      <View style={styles.inputContainer}>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.textInput2}
-            placeholder="Min Voltage"
-            value={minVoltage}
-            onChangeText={setMinVoltage}
-          />
-          <TextInput
-            style={styles.textInput2}
-            placeholder="Max Voltage"
-            value={maxVoltage}
-            onChangeText={setMaxVoltage}
-          />
-        </View>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.textInput2}
-            placeholder="Step"
-            value={step}
-            onChangeText={setStep}
-          />
-          <TextInput
-            style={styles.textInput2}
-            placeholder="Delay"
-            value={delay}
-            onChangeText={setDelay}
-          />
-        </View>
-      </View>
-      <View style={styles.buttonContainer}>
-        <Button title="Start Measurement" onPress={sendMessageToDevice} />
-      </View>
-    </View>
-      </>
+          <View style={styles.containerScreen2}>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.textInput2}
+                  placeholder="Min Voltage"
+                  value={minVoltage}
+                  onChangeText={setMinVoltage}
+                />
+                <TextInput
+                  style={styles.textInput2}
+                  placeholder="Max Voltage"
+                  value={maxVoltage}
+                  onChangeText={setMaxVoltage}
+                />
+              </View>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.textInput2}
+                  placeholder="Step"
+                  value={step}
+                  onChangeText={setStep}
+                />
+                <TextInput
+                  style={styles.textInput2}
+                  placeholder="Delay"
+                  value={delay}
+                  onChangeText={setDelay}
+                />
+              </View>
+            </View>
+            <View style={styles.buttonContainer}>
+              <Button title="Start Measurement" onPress={sendMessageToDevice} />
+            </View>
+          </View>
+        </>
       )}
     </>
   );
