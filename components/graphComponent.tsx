@@ -12,7 +12,7 @@ type Point = {
 // Tipagem para cada conjunto de dados
 type Dataset = {
   name: string;
-  graphData:{points: Point[]};
+  graphData: { points: Point[] };
 };
 
 // Propriedades do componente CyclicVoltammetryGraph
@@ -168,9 +168,10 @@ const styles = StyleSheet.create({
 });
 
 // Componente principal
-export const GraphScreen:React.FC<{experiments:TExperiment[]}> = ({experiments}) => {
-  const newExperiments = experiments.filter((experiment)=>experiment.graphData!=null);
+export const GraphScreen: React.FC<{ experiments: TExperiment[], actual: boolean }> = ({ experiments, actual }) => {
+  const newExperiments = experiments.filter((experiment) => experiment.graphData != null);
 
-  if(newExperiments.length == 0) return <Text>No experiment data available for the selected experiments</Text>
+  if (newExperiments.length == 0 && !actual) return <Text>No experiment data available for the selected experiments</Text>
+  if (newExperiments.length == 0 && actual) return <></>
   return <CyclicVoltammetryGraph datasets={newExperiments} />;
 }

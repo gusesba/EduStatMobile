@@ -2,6 +2,7 @@ import axios from "axios";
 import { baseUrl } from "./config";
 import { getValueForStore } from "./secureStore";
 import * as FileSystem from 'expo-file-system';
+import { TExperiment } from "../experiments";
 
 export const getUserExperiments = async () => {
     const user_token = await getValueForStore('user_token'); 
@@ -142,3 +143,56 @@ export const saveJsonToFile = async (filename:string, jsonData:object) => {
       console.error('Error deleting file:', error);
     }
   };
+
+  export const createUserExperiment = async(name:string)=> {
+    const user_token = await getValueForStore('user_token'); 
+    if (!user_token) {
+        alert("User must be signed in!");
+        return [[],0];
+    }
+
+    try {
+        const response = await axios({
+            method:'post',
+            url: baseUrl + '/create-user-experiment',
+            headers: {
+                Authorization: `Bearer ${user_token}` // Adiciona o token no cabeçalho
+            },
+            data:{
+                name
+            }
+        })
+        return [response.data,response.status]
+    }
+    catch (error: any) {
+        return [error,error.response?.status || 500]; // Retorna 500 como fallback se `response` não existir
+    }
+  }
+
+  export const saveUserExperiment = async (experiment:TExperiment) => {
+    console.log(experiment)
+    const user_token = await getValueForStore('user_token'); 
+    if (!user_token) {
+        alert("User must be signed in!");
+        return [[],0];
+    }
+
+    try {
+        const response = await axios({
+            method:'post',
+            url: baseUrl + '/save-user-experiment',
+            headers: {
+                Authorization: `Bearer ${user_token}` // Adiciona o token no cabeçalho
+            },
+            data:{
+                experimentId:experiment.id,
+                graphData:experiment.graphData,
+                parameters:experiment.parameters
+            }
+        })
+        return [response.data,response.status]
+    }
+    catch (error: any) {
+        return [error,error.response?.status || 500]; // Retorna 500 como fallback se `response` não existir
+    }
+  }

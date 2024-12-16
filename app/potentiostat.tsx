@@ -1,9 +1,14 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { Button, Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { BleManager, Device, BleError, Characteristic } from "react-native-ble-plx";
 import { Base64 } from "js-base64";
-import { TextInput } from "react-native-paper";
+import { Button, Modal, TextInput } from "react-native-paper";
+import { GraphScreen } from "@/components/graphComponent";
+import { TExperiment } from "./experiments";
+import { ScrollView } from "react-native-gesture-handler";
+import { createUserExperiment, saveJsonToFile, saveUserExperiment } from "./libs/experiments";
+import { isUserLogged } from "./libs/login";
 
 export const bleManager = new BleManager();
 const DATA_SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"; // * Get from the device manufacturer - 9800 for the BLE iOs Tester App "MyBLESim"
@@ -18,6 +23,52 @@ export default function Potentiostat() {
   const [maxVoltage, setMaxVoltage] = useState<string>("");
   const [step, setStep] = useState<string>("");
   const [delay, setDelay] = useState<string>("");
+  const [points, setPoints] = useState<{ x: number, y: number }[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [experimentName, setExperimentName] = useState('');
+  const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
+
+  useEffect(() => {
+    isUserLogged().then((a) => {
+      setUserLogged(a);
+    })
+  }, [])
+
+  const handleCreateExperiment = () => {
+    saveJsonToFile(experimentName, {
+      name: experimentName, id: experimentName, graphData: {
+        points
+      }, parameters: {
+        minVoltage,
+        maxVoltage,
+        step,
+        delay
+      }
+    })
+  }
+
+  const handleCreateExperimentUser = async () => {
+    const [experiment, status] = await createUserExperiment(experimentName);
+
+    experiment.graphData = { points };
+    experiment.parameters = {
+      minVoltage,
+      maxVoltage,
+      step,
+      delay
+    }
+
+    saveUserExperiment(experiment);
+  }
+
+  const handleShowModal = () => {
+    setShowModal(true)
+  }
+
+  const handleHideModal = () => {
+    setShowModal(false)
+  }
+
 
   // Managers Central Mode - Scanning for devices
   const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
@@ -35,6 +86,10 @@ export default function Potentiostat() {
           }
           return prevState;
         });
+        if (device.name?.includes('Edu')) {
+          connectToDevice(device)
+          bleManager.stopDeviceScan();
+        }
       }
     });
   }
@@ -59,6 +114,19 @@ export default function Potentiostat() {
     }
 
     const dataInput = Base64.decode(characteristic.value);
+
+    // Divida a string por linhas
+    const lines = dataInput.split('\n'); // ["sentVoltage 1.234", "MeasuredVoltage 5.678"]
+
+    // Extraia os valores e crie o objeto
+    const result = {
+      x: parseFloat(lines[0].split(' ')[1]), // Pega "1.234" e converte para número
+      y: parseFloat(lines[1].split(' ')[1]) // Pega "5.678" e converte para número
+    };
+
+
+    setPoints(points.concat([result]))
+
     setDataReceived(dataInput);
   };
 
@@ -95,84 +163,89 @@ export default function Potentiostat() {
 
   return (
     <>
-      <View>
-        <Text style={styles.textTitle}>Connect to your device</Text>
-        <View style={styles.containerButtons}>
-          <Button title="Start" onPress={scanForPeripherals} />
-          <Button
-            title="Stop"
-            onPress={() => {
-              console.log("Stop Scanning");
-              bleManager.stopDeviceScan();
-            }}
-          />
-          <Button title="Clear" onPress={() => setAllDevices([])}></Button>
+      <ScrollView>
+        <View>
+          <View style={styles.containerButtons}>
+            <Button mode="contained" onPress={scanForPeripherals}>{connectedDevice ? 'Disconnect' : 'Connect'}</Button>
+          </View>
         </View>
-
-        {allDevices.map((device) => {
-          if (device.name)
-            return <><Text>{device.name}</Text><Button
-              key={`button${device.id}`}
-              title="Connect"
-              onPress={() => connectToDevice(device)}
-            /></>
-
-          return null
-        })}
-
-      </View>
-      {connectedDevice && (
-        <>
-          <View style={styles.containerConnectedDevice}>
-            <Text style={styles.textTitle}>Connected to Device: </Text>
-            <View style={styles.containerDevices}>
-              <Text>ID: {connectedDevice.id}</Text>
-              <Text>Name: {connectedDevice.name}</Text>
-              <Text>Data Received: {dataReceived} </Text>
-            </View>
-          </View>
-          <View style={styles.containerScreen2}>
-            <View style={styles.inputContainer}>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.textInput2}
-                  placeholder="Min Voltage"
-                  value={minVoltage}
-                  onChangeText={setMinVoltage}
-                />
-                <TextInput
-                  style={styles.textInput2}
-                  placeholder="Max Voltage"
-                  value={maxVoltage}
-                  onChangeText={setMaxVoltage}
-                />
+        {connectedDevice && (
+          <>
+            <View style={styles.containerScreen2}>
+              <View style={styles.inputContainer}>
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.textInput2}
+                    placeholder="Min Voltage"
+                    value={minVoltage}
+                    onChangeText={setMinVoltage}
+                  />
+                  <TextInput
+                    style={styles.textInput2}
+                    placeholder="Max Voltage"
+                    value={maxVoltage}
+                    onChangeText={setMaxVoltage}
+                  />
+                </View>
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.textInput2}
+                    placeholder="Step"
+                    value={step}
+                    onChangeText={setStep}
+                  />
+                  <TextInput
+                    style={styles.textInput2}
+                    placeholder="Delay"
+                    value={delay}
+                    onChangeText={setDelay}
+                  />
+                </View>
               </View>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.textInput2}
-                  placeholder="Step"
-                  value={step}
-                  onChangeText={setStep}
-                />
-                <TextInput
-                  style={styles.textInput2}
-                  placeholder="Delay"
-                  value={delay}
-                  onChangeText={setDelay}
-                />
+              <GraphScreen experiments={points.length > 1 ? [{
+                id: 'Experimento Atual', name: 'Experimento Atual', graphData: {
+                  points
+                }
+              } as TExperiment] : []} actual={true} />
+              <View style={styles.buttonContainer}>
+                <Button mode='contained' onPress={sendMessageToDevice}>Start Measurement</Button>
+                <Button mode='contained' onPress={handleShowModal}>Save</Button>
               </View>
             </View>
-            <View style={styles.buttonContainer}>
-              <Button title="Start Measurement" onPress={sendMessageToDevice} />
-            </View>
-          </View>
-        </>
-      )}
+
+          </>
+        )}
+      </ScrollView>
+      <Modal visible={showModal} onDismiss={handleHideModal} contentContainerStyle={styles.modalContainer}>
+        <TextInput
+          mode="outlined"
+          label="Experiment Name"
+          value={experimentName}
+          onChangeText={text => setExperimentName(text)}
+        />
+        <View style={styles.buttonContainer}>
+          <Button mode="outlined" onPress={handleHideModal} >
+            Close
+          </Button>
+          <Button mode="contained" onPress={handleCreateExperiment} >
+            Save Local
+          </Button>
+          {userLogged && <Button mode="contained" onPress={handleCreateExperimentUser} >
+            Save for User
+          </Button>}
+
+        </View>
+      </Modal>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 40,
+  },
   containerScreen: {
     flex: 1,
     flexDirection: "column",
@@ -243,5 +316,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingVertical: 12,
+    gap: 5
   },
 });
