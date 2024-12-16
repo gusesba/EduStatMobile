@@ -1,1 +1,1 @@
-export const baseUrl = "http://192.168.18.20:6543"
+export const baseUrl = "http://ec2-3-140-246-34.us-east-2.compute.amazonaws.com:80"

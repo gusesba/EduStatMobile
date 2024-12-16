@@ -9,7 +9,8 @@
     "ios": "DARK_MODE=media expo run:ios",
     "web": "DARK_MODE=media expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "postinstall": "pnpm dlx json -I -f package.json -e 'delete this.packageManager'"
   },
   "jest": {
     "preset": "jest-expo"

@@ -1,9 +1,10 @@
-import { router} from 'expo-router';
-import {  useState } from 'react';
-import { View, StyleSheet} from 'react-native';
-import {Button, Text, TextInput} from 'react-native-paper';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Button, Text, TextInput } from 'react-native-paper';
 import { login } from './libs/login';
 import { removeStore } from './libs/secureStore';
+import { baseUrl } from './libs/config';
 
 export default function Login() {
   const [text, setText] = useState("");
@@ -11,19 +12,17 @@ export default function Login() {
 
 
   const loginHandler = async () => {
-    const status = await login(text,password);
+    const status = await login(text, password);
 
-    if(status == 201)
-    {
-      router.navigate('/potentiostat')
+    if (status == 201) {
+      router.navigate('/simulation')
     }
-    else if(status == 400)
-    {
+    else if (status == 400) {
       alert("User or Password invalid!")
     }
-    else
-    {
-      alert("Unknown Error!")
+    else {
+      console.log("Url: ", baseUrl)
+      alert("Unknown Error!, URL: " + baseUrl + ", Status: " + status)
     }
 
   }
@@ -31,9 +30,9 @@ export default function Login() {
   const handleLocalUse = async () => {
     await removeStore('user_token')
     await removeStore('user_id')
-    router.navigate('/potentiostat')
+    router.navigate('/simulation')
   }
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.title} variant='displayLarge'>Sign In</Text>
@@ -54,9 +53,9 @@ export default function Login() {
       </View>
       <View style={styles.buttons}>
         <Button mode='contained' style={styles.button} onPress={loginHandler}>Sign In</Button>
-        <Text variant='labelSmall' style={{alignSelf:'center', marginBottom:-10}}>First time?</Text>
-        <Button onPress={()=>router.navigate('/register')} mode='contained-tonal' style={styles.button}>Sign Up</Button>
-        <Text variant='labelSmall' style={{alignSelf:'center', marginBottom:-10}}>No connection?</Text>
+        <Text variant='labelSmall' style={{ alignSelf: 'center', marginBottom: -10 }}>First time?</Text>
+        <Button onPress={() => router.navigate('/register')} mode='contained-tonal' style={styles.button}>Sign Up</Button>
+        <Text variant='labelSmall' style={{ alignSelf: 'center', marginBottom: -10 }}>No connection?</Text>
         <Button onPress={handleLocalUse} mode='contained-tonal' style={styles.button}>Local Use</Button>
       </View>
     </View>
@@ -67,10 +66,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 100,
-    gap:30
+    gap: 30
   },
-  title:{
-    alignSelf:'center'
+  title: {
+    alignSelf: 'center'
   },
   text: {
     fontSize: 50,
@@ -88,8 +87,8 @@ const styles = StyleSheet.create({
   },
   inputs: {
     marginHorizontal: 20,
-    gap:10
+    gap: 10
   }
 
-  
+
 });
