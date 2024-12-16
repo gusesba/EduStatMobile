@@ -10,7 +10,7 @@ import {
 import { Heading } from '@/components/ui/heading';
 import { Text } from '@/components/ui/text';
 import { Progress, ProgressFilledTrack } from '@/components/ui/progress';
-//import { useFont } from "@shopify/react-native-skia";
+import { useFont } from "@shopify/react-native-skia";
 import data1 from '../assets/cyclic_voltammetry_measures/teste_antes.json';
 import data2 from '../assets/cyclic_voltammetry_measures/teste_depois.json';
 
@@ -129,7 +129,7 @@ if (!inter) {
 
 export default function Simulation() {
 
-  //const font = useFont(require('../assets/fonts/SpaceMono-Regular.ttf'), 12);
+  const font = useFont(require('../assets/fonts/SpaceMono-Regular.ttf'), 12);
 
   const [electrodesOpen, setElectrodesOpen] = useState(false);
   const [electrodesValue, setElectrodesValue] = useState("1");
@@ -324,8 +324,8 @@ export default function Simulation() {
         )}
         {DATA.length === visibleFirstData.length && (
           <View className="h-2/3 justify-center mb-10">
-            {/* <CartesianChart data={visibleFirstData} xKey="voltage" yKeys={["current"]} axisOptions={{ font }} transformState={transformState.state}> */}
-            <CartesianChart data={visibleFirstData} xKey="voltage" yKeys={["current"]} transformState={transformState.state}>
+            <CartesianChart data={visibleFirstData} xKey="voltage" yKeys={["current"]} axisOptions={{ font }} transformState={transformState.state}>
+              {/* <CartesianChart data={visibleFirstData} xKey="voltage" yKeys={["current"]} transformState={transformState.state}> */}
 
               {/* 👇 render function exposes various data, such as points. */}
               {({ points }) => (
@@ -372,8 +372,8 @@ export default function Simulation() {
 
         {finished && (
           <View className="h-2/3 justify-center mb-10">
-            {/* <CartesianChart data={visibleSecondData} xKey="voltage" yKeys={["current", "current2"]} axisOptions={{ font }} transformState={transformState.state}> */}
-            <CartesianChart data={visibleSecondData} xKey="voltage" yKeys={["current", "current2"]} transformState={transformState.state}>
+            <CartesianChart data={visibleSecondData} xKey="voltage" yKeys={["current", "current2"]} axisOptions={{ font }} transformState={transformState.state}>
+              {/* <CartesianChart data={visibleSecondData} xKey="voltage" yKeys={["current", "current2"]} transformState={transformState.state}> */}
 
               {/* 👇 render function exposes various data, such as points. */}
               {({ points }) => (
