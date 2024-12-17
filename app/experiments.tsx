@@ -1,6 +1,6 @@
 import { GraphScreen } from "@/components/graphComponent";
 import { useEffect, useState } from "react";
-import { deleteJsonFile, deleteUserExperiment, getTeamExperiments, getUserExperiments, readEdsJsonFiles, saveJsonToFile } from "./libs/experiments";
+import { deleteJsonFile, deleteUserExperiment, getTeamExperiments, getUserExperiments, readEdsJsonFiles, saveJsonToFile, saveUserNotes } from "./libs/experiments";
 import { StyleSheet, View } from "react-native";
 import { BottomNavigation, Button, IconButton, Modal, Text, TextInput } from "react-native-paper";
 import { TouchableOpacity } from "react-native-gesture-handler";
@@ -75,7 +75,7 @@ export default function Experiment() {
   }
 
   const handleSaveNote = () => {
-
+    noteExperiment && saveUserNotes(noteExperiment.id,note)
   }
 
 
@@ -98,7 +98,7 @@ export default function Experiment() {
             experiments.map((experiment) => {
               if (selectedExperiments.find((x) => x.id == experiment.id))
                 return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity style={{ padding: 15 }} onPress={() => { setSelectedExperiments((experiments) => experiments.filter((ex) => ex.id != experiment.id)) }}><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={() => handleDeleteUser(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View>
-              return <View key={experiment.id} style={styles.teamName}><TouchableOpacity style={{ padding: 15 }} onPress={() => setSelectedExperiments((experiments) => [...experiments, experiment])} ><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={() => handleDeleteUser(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View>
+              return <View key={experiment.id} style={styles.teamName}><TouchableOpacity style={{ padding: 15 }} onPress={() => setSelectedExperiments((experiments) => [...experiments, experiment])} ><Text>{experiment.name}</Text></TouchableOpacity><View style={styles.btns}><IconButton onPress={() => handleOpenNotes(experiment)} style={{ height: 20, margin: 0 }} icon="pen" /><IconButton onPress={() => handleDeleteUser(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View></View>
             })
           ) : (
             <Text style={{ marginLeft: 10 }}>No User Experiments Available.</Text>

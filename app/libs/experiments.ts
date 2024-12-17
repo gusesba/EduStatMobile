@@ -196,3 +196,29 @@ export const saveJsonToFile = async (filename:string, jsonData:object) => {
         return [error,error.response?.status || 500]; // Retorna 500 como fallback se `response` não existir
     }
   }
+
+  export const saveUserNotes = async (experimentId:string,notes:string) => {
+    const user_token = await getValueForStore('user_token'); 
+    if (!user_token) {
+        alert("User must be signed in!");
+        return [[],0];
+    }
+
+    try {
+        const response = await axios({
+            method:'post',
+            url: baseUrl + '/append-user-experiment-notes',
+            headers: {
+                Authorization: `Bearer ${user_token}` // Adiciona o token no cabeçalho
+            },
+            data:{
+              experimentId,
+              notes
+            }
+        })
+        return [response.data,response.status]
+    }
+    catch (error: any) {
+        return [error,error.response?.status || 500]; // Retorna 500 como fallback se `response` não existir
+    }
+}
