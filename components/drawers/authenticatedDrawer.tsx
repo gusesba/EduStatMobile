@@ -18,7 +18,7 @@ export default function AuthenticatedDrawer() {
     <Drawer.Navigator>
       <Drawer.Screen name="main" component={Main} options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} />
       <Drawer.Screen name="register" component={Register} options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} />
-      {/* <Drawer.Screen
+       <Drawer.Screen
         name="potentiostat"
         component={Potentiostat}
         options={{
@@ -28,7 +28,7 @@ export default function AuthenticatedDrawer() {
            
           ),
         }}
-      /> */}
+      /> 
 
 
       <Drawer.Screen name="experiments" component={Experiments} options={{
