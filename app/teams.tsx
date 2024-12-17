@@ -7,6 +7,7 @@ import { Picker } from '@react-native-picker/picker';
 import { getTeamExperiments, listEdsFilesInDirectory, readJsonFromFile, saveJsonToFile } from './libs/experiments';
 import { isUserLogged } from './libs/login';
 import NotLogged from '@/components/NotLogged';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function Teams() {
   const [teamName, setTeamName] = useState("");
@@ -31,11 +32,24 @@ export default function Teams() {
 
   const [userLogged, setUserLogged] = useState<string|null|undefined>(null);
 
+  const isFocused = useIsFocused();
+
   useEffect(()=>{
     isUserLogged().then((a)=>{
       setUserLogged(a);
     })
-  },[])
+  setTeamName("")
+  setVisible(false)
+  setVisibleAddMember(false)
+  setIndex(0)
+  setSelectedTeam("")
+  setAddUserEmail("")
+  setTeams([])
+  setUsers([])
+  setExperiments([])
+  setInvites([])
+  setSelectedRole("VIEWER")
+  },[isFocused])
 
 
 
@@ -44,7 +58,7 @@ export default function Teams() {
       getTeamsHandler()
       getInvitesHandler()
     }
-  },[userLogged])
+  },[userLogged,isFocused])
   useEffect(()=>{
     if(selectedTeam != ""){
       getTeamUsersHandler()

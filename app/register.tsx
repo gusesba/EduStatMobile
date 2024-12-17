@@ -1,13 +1,22 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, StyleSheet} from 'react-native';
 import {Button, Text, TextInput} from 'react-native-paper';
 import { register } from './libs/login';
 import { removeStore } from './libs/secureStore';
+import { useIsFocused } from '@react-navigation/native';
 export default function Register() {
   const [text, setText] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+
+  const isFocused = useIsFocused();
+
+  useEffect(()=>{
+    setText("")
+    setName("")
+    setPassword("")
+  },[isFocused])
 
   const registerHandler = async () => {
     const status = await register(text,password,name);
@@ -20,9 +29,9 @@ export default function Register() {
     {
       alert("Unknown Error!")
     }
-
-
   }
+
+  
 
   const handleLocalUse = async () => {
     await removeStore('user_token')

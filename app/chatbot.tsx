@@ -5,10 +5,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Markdown from 'react-native-markdown-display';
 import { baseUrl } from './libs/config';
 import { getValueForStore } from './libs/secureStore';
-import { useFocusEffect } from 'expo-router';
-import { isUserLogged } from './libs/login';
 import NotLogged from '@/components/NotLogged';
-
+import { useIsFocused } from '@react-navigation/native';
+import { isUserLogged } from './libs/login';
 
 export default function Chatbot() {
   const [message, setMessage] = useState<string>('');
@@ -17,11 +16,7 @@ export default function Chatbot() {
 
   const [userLogged, setUserLogged] = useState<string|null|undefined>(null);
 
-  useEffect(()=>{
-    isUserLogged().then((a)=>{
-      setUserLogged(a);
-    })
-  },[])
+    const isFocused = useIsFocused();
 
   const fetchUserId = async () => {
     return getValueForStore('user_id');
@@ -42,8 +37,14 @@ export default function Chatbot() {
       }
     };
 
-    loadMessages();
-  }, []);
+    isUserLogged().then((a)=>{
+          setUserLogged(a);
+        })
+
+    loadMessages()
+    setMessage("")
+    setLoading(false)
+  }, [isFocused]);
 
   useEffect(() => {
     const saveMessages = async () => {

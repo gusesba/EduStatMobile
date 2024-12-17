@@ -16,52 +16,48 @@ export default function AuthenticatedDrawer() {
   return (
 
     <Drawer.Navigator>
-      <Drawer.Screen name="main" component={Main} options={{ unmountOnBlur: true, headerShown: false, drawerItemStyle: { display: 'none' } }} />
-      <Drawer.Screen name="register" component={Register} options={{ unmountOnBlur: true, headerShown: false, drawerItemStyle: { display: 'none' } }} />
-      <Drawer.Screen
+      <Drawer.Screen name="main" component={Main} options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} />
+      <Drawer.Screen name="register" component={Register} options={{ headerShown: false, drawerItemStyle: { display: 'none' } }} />
+      {/* <Drawer.Screen
         name="potentiostat"
         component={Potentiostat}
         options={{
-          unmountOnBlur: true,
           title: "Potentiostat",
           drawerIcon: ({ color, size }) => (
             <Ionicons name="flask-outline" color={color} size={size} />
-            // or use <MaterialCommunityIcons name="chart-line" color={color} size={size} />
+           
           ),
         }}
-      />
+      /> */}
 
 
       <Drawer.Screen name="experiments" component={Experiments} options={{
-        unmountOnBlur: true, title: 'Experiments', drawerIcon: ({ color, size }) => (
+         title: 'Experiments', drawerIcon: ({ color, size }) => (
           <Ionicons name="beaker-outline" color={color} size={size} />
-        )
+        ),
       }} />
 
       <Drawer.Screen name="educhat" component={Chatbot} options={{
-        unmountOnBlur: true, title: 'EduChat', drawerIcon: ({ color, size }) => (
+         title: 'EduChat', drawerIcon: ({ color, size }) => (
           <Ionicons name="chatbubbles-outline" color={color} size={size} />)
       }}
       />
-      <Drawer.Screen name="simulation" component={Simulation} options={{ unmountOnBlur: true, title: 'Simulation' }} />
+      <Drawer.Screen name="simulation" component={Simulation} options={{  title: 'Simulation' }} />
       <Drawer.Screen name="settings" component={Settings} options={{
-        unmountOnBlur: true, title: 'Settings', drawerIcon: ({ color, size }) => (
+        title: 'Settings', drawerIcon: ({ color, size }) => (
           <Ionicons name="settings-outline" color={color} size={size} />
         )
       }} />
       <Drawer.Screen name="teams" component={Teams} options={{
-        unmountOnBlur: true, title: 'Teams', drawerIcon: ({ color, size }) => (
+        title: 'Teams', drawerIcon: ({ color, size }) => (
           <Ionicons name="people-outline" color={color} size={size} />
         )
       }} />
       <Drawer.Screen name="login" component={Login} options={{
-        unmountOnBlur: true, headerShown: false, title: 'Logout', drawerIcon: ({ color, size }) => (
+         headerShown: false, title: 'Logout', drawerIcon: ({ color, size }) => (
           <Ionicons name="arrow-back-circle-outline" color={color} size={size} />
         )
       }} />
-      {/* <Drawer.Screen name="chatbot" component={Chatbot} options={{title:'Chatbot', drawerIcon:({color,size})=>(
-           <Ionicons name="arrow-back-circle-outline" color={color} size={size} />
-        )}}/> */}
 
     </Drawer.Navigator>
 

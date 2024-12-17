@@ -5,6 +5,7 @@ import { StyleSheet, View } from "react-native";
 import { BottomNavigation, Button, IconButton, Text } from "react-native-paper";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { isUserLogged } from "./libs/login";
+import { useIsFocused } from "@react-navigation/native";
 
 export type TExperiment = {
   id: string,
@@ -37,11 +38,18 @@ export default function Experiment() {
 
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
 
+    const isFocused = useIsFocused();
+
   useEffect(() => {
     isUserLogged().then((a) => {
       setUserLogged(a);
     })
-  }, [])
+    setIndex(0)
+    setSelectedExperiments([])
+    setMeanExperiments([])
+    setExperiments([])
+    setLocalExperiments([])
+  }, [isFocused])
 
   const handleDeleteLocal = (id: string) => {
     deleteJsonFile(id).then(() => handleGetLocalExperiments());
@@ -149,7 +157,7 @@ export default function Experiment() {
 
   useEffect(() => {
     handleGetLocalExperiments();
-  }, [])
+  }, [isFocused])
   const handleGetUserExperiments = async () => {
     const [data, status] = await getUserExperiments();
 

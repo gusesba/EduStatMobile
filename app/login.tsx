@@ -1,15 +1,22 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { login } from './libs/login';
 import { removeStore } from './libs/secureStore';
 import { baseUrl } from './libs/config';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function Login() {
   const [text, setText] = useState("");
   const [password, setPassword] = useState("");
 
+  const isFocused = useIsFocused();
+
+  useEffect(()=>{
+    setText("")
+    setPassword("")
+  },[isFocused])
 
   const loginHandler = async () => {
     const status = await login(text, password);
