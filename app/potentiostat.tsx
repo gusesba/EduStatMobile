@@ -34,8 +34,8 @@ export default function Potentiostat() {
     })
   }, [])
 
-  const handleCreateExperiment = () => {
-    saveJsonToFile(experimentName, {
+  const handleCreateExperiment = async () => {
+    const fileUri = await saveJsonToFile(experimentName, {
       name: experimentName, id: experimentName, graphData: {
         points
       }, parameters: {
@@ -45,10 +45,14 @@ export default function Potentiostat() {
         delay
       }
     })
+    if(fileUri)
+      alert("Experiment Saved!")
+    else
+      alert("Error saving experiment!")
   }
 
   const handleCreateExperimentUser = async () => {
-    const [experiment, status] = await createUserExperiment(experimentName);
+    const [experiment, _] = await createUserExperiment(experimentName);
 
     experiment.graphData = { points };
     experiment.parameters = {
@@ -58,7 +62,9 @@ export default function Potentiostat() {
       delay
     }
 
-    saveUserExperiment(experiment);
+    await saveUserExperiment(experiment);
+
+    alert("Experiment Saved!")
   }
 
   const handleShowModal = () => {
@@ -75,6 +81,7 @@ export default function Potentiostat() {
     devices.findIndex((device) => nextDevice.id === device.id) > -1;
   function scanForPeripherals() {
     console.log("Scanning for peripherals...");
+    bleManager.stopDeviceScan();
     bleManager.startDeviceScan(null, null, (error, device) => {
       if (error) {
         console.error(error);
@@ -88,7 +95,7 @@ export default function Potentiostat() {
         });
         if (device.name?.includes('Edu')) {
           connectToDevice(device)
-          bleManager.stopDeviceScan();
+          //bleManager.stopDeviceScan();
         }
       }
     });
@@ -208,6 +215,7 @@ export default function Potentiostat() {
                 }
               } as TExperiment] : []} actual={true} />
               <View style={styles.buttonContainer}>
+                {points.length > 0 && <Button mode='contained' onPress={()=>setPoints([])}>Clear</Button>}
                 <Button mode='contained' onPress={sendMessageToDevice}>Start Measurement</Button>
                 <Button mode='contained' onPress={handleShowModal}>Save</Button>
               </View>
