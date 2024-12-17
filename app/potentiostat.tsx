@@ -120,12 +120,12 @@ export default function Potentiostat() {
 
     // Extraia os valores e crie o objeto
     const result = {
-      x: parseFloat(lines[0].split(' ')[1]), // Pega "1.234" e converte para número
-      y: parseFloat(lines[1].split(' ')[1]) // Pega "5.678" e converte para número
+      x: parseFloat(lines[0]), // Pega "1.234" e converte para número
+      y: parseFloat(lines[1]) // Pega "5.678" e converte para número
     };
 
 
-    setPoints(points.concat([result]))
+    setPoints((state)=>[...state,result])
 
     setDataReceived(dataInput);
   };
