@@ -2,7 +2,7 @@ import { GraphScreen } from "@/components/graphComponent";
 import { useEffect, useState } from "react";
 import { deleteJsonFile, deleteUserExperiment, getTeamExperiments, getUserExperiments, readEdsJsonFiles, saveJsonToFile } from "./libs/experiments";
 import { StyleSheet, View } from "react-native";
-import { BottomNavigation, Button, IconButton, Text } from "react-native-paper";
+import { BottomNavigation, Button, IconButton, Modal, Text, TextInput } from "react-native-paper";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { isUserLogged } from "./libs/login";
 import { useIsFocused } from "@react-navigation/native";
@@ -26,6 +26,9 @@ export type TExperiment = {
 
 export default function Experiment() {
   const [index, setIndex] = useState(0);
+  const [noteExperiment,setNoteExperiment] = useState<TExperiment|null>(null);
+  const [modal, setModal] = useState(false);
+  const [note, setNote] = useState("")
   const [selectedExperiments, setSelectedExperiments] = useState<TExperiment[]>([])
   const [meanExperiments, setMeanExperiments] = useState<TExperiment[]>([])
   const [routes] = useState([
@@ -38,12 +41,23 @@ export default function Experiment() {
 
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
 
+  const handleOpenNotes = (experiment:TExperiment) => {
+    setNoteExperiment(experiment)
+    setModal(true);
+  }
+
+  const hideModal = () =>{
+    setModal(false);
+  }
+
     const isFocused = useIsFocused();
 
   useEffect(() => {
     isUserLogged().then((a) => {
       setUserLogged(a);
     })
+    setModal(false)
+    setNoteExperiment(null)
     setIndex(0)
     setSelectedExperiments([])
     setMeanExperiments([])
@@ -60,6 +74,10 @@ export default function Experiment() {
     handleGetUserExperiments();
   }
 
+  const handleSaveNote = () => {
+
+  }
+
 
   const renderScene = BottomNavigation.SceneMap({
     experiments: () => (
@@ -69,8 +87,8 @@ export default function Experiment() {
           {localExperiments.length > 0 ? (
             localExperiments.map((experiment) => {
               if (selectedExperiments.find((x) => x.id == experiment.id))
-                return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity style={{ padding: 15 }} onPress={() => { setSelectedExperiments((experiments) => experiments.filter((ex) => ex.id != experiment.id)) }}><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View>
-              return <View key={experiment.id} style={styles.teamName}><TouchableOpacity style={{ padding: 15 }} onPress={() => setSelectedExperiments((experiments) => [...experiments, experiment])}><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View>
+                return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity style={{ padding: 15 }} onPress={() => { setSelectedExperiments((experiments) => experiments.filter((ex) => ex.id != experiment.id)) }}><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="edit" /><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View>
+              return <View key={experiment.id} style={styles.teamName}><TouchableOpacity style={{ padding: 15 }} onPress={() => setSelectedExperiments((experiments) => [...experiments, experiment])}><Text>{experiment.name}</Text></TouchableOpacity><View style={styles.btns}><IconButton onPress={() => handleOpenNotes(experiment)} style={{ height: 20, margin: 0 }} icon="pen" /><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View></View>
             })
           ) : (
             <Text style={{ marginLeft: 10 }}>No Local Experiments Available.</Text>
@@ -171,12 +189,33 @@ export default function Experiment() {
     setLocalExperiments(exp);
   }
 
-  return <BottomNavigation
-    navigationState={{ index, routes }}
-    onIndexChange={setIndex}
-    renderScene={renderScene}
-    shifting={false} // Shifting animation for active tabs
-  />
+  return (
+    <>
+      <BottomNavigation
+      navigationState={{ index, routes }}
+      onIndexChange={setIndex}
+      renderScene={renderScene}
+      shifting={false} // Shifting animation for active tabs
+      />
+      <Modal visible={modal} onDismiss={hideModal} contentContainerStyle={styles.modalContainer}>
+        <TextInput
+          mode="outlined"
+          label="Note"
+          multiline={true}
+          value={note}
+          onChangeText={text => setNote(text)}
+        />
+        <View style={styles.buttonContainer}>
+          <Button mode="outlined" onPress={hideModal}>
+            Close
+          </Button>
+          <Button mode="contained" onPress={handleSaveNote}>
+            OK
+          </Button>
+        </View>
+      </Modal>
+    </>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -208,5 +247,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     margin: 10
+  },
+  btns:{
+    flexDirection:'row',
+    gap:5
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 40,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
   },
 })
