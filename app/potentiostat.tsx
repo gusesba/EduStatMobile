@@ -7,9 +7,11 @@ import { Button, Modal, TextInput } from "react-native-paper";
 import { GraphScreen } from "@/components/graphComponent";
 import { TExperiment } from "./experiments";
 import { ScrollView } from "react-native-gesture-handler";
-import { createUserExperiment, saveJsonToFile, saveUserExperiment } from "./libs/experiments";
+import { createTeamExperiment, createUserExperiment, saveJsonToFile, saveTeamExperiment, saveUserExperiment } from "./libs/experiments";
 import { isUserLogged } from "./libs/login";
 import { useIsFocused } from "@react-navigation/native";
+import { getTeams } from "./libs/teams";
+import { Picker } from "@react-native-picker/picker";
 
 export const bleManager = new BleManager();
 const DATA_SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"; // * Get from the device manufacturer - 9800 for the BLE iOs Tester App "MyBLESim"
@@ -27,6 +29,8 @@ export default function Potentiostat() {
   const [showModal, setShowModal] = useState(false);
   const [experimentName, setExperimentName] = useState('');
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
+  const [teams,setTeams] = useState<{name:string,id:string}[]>([])
+  const [expTeam, setExpTeam] = useState("");
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -35,6 +39,7 @@ export default function Potentiostat() {
       setUserLogged(a);
     })
     //Zerando variaveis de estado
+    setTeams([]);
     setMinVoltage("");
     setMaxVoltage("");
     setStep("");
@@ -44,6 +49,23 @@ export default function Potentiostat() {
     setShowModal(false);
     setConnectedDevice(null);
   }, [isFocused])
+
+  useEffect(() => {
+      if(userLogged){
+        getTeamsHandler()
+      }
+    },[userLogged,isFocused])
+
+  const getTeamsHandler = async () => {
+      const [teams, status] = await getTeams()
+      
+      if(status == 200)
+      {
+        setTeams(teams)
+      }
+      else
+        alert("Unknown Error!")
+    }
 
   const handleCreateExperiment = async () => {
     const fileUri = await saveJsonToFile(experimentName, {
@@ -74,6 +96,22 @@ export default function Potentiostat() {
     }
 
     await saveUserExperiment(experiment);
+
+    alert("Experiment Saved!")
+  }
+
+  const handleCreateExperimentTeam = async () => {
+    const [experiment, _] = await createTeamExperiment(experimentName,expTeam);
+
+    experiment.graphData = { points };
+    experiment.parameters = {
+      minVoltage,
+      maxVoltage,
+      step,
+      delay
+    }
+
+    await saveTeamExperiment(experiment,expTeam);
 
     alert("Experiment Saved!")
   }
@@ -258,6 +296,15 @@ export default function Potentiostat() {
           value={experimentName}
           onChangeText={text => setExperimentName(text)}
         />
+        {userLogged && <Picker
+        selectedValue={expTeam}
+        onValueChange={(itemValue) => setExpTeam(itemValue)}
+        style={styles.picker}
+      >
+        {teams.map((team)=>
+          <Picker.Item label={team.name} value={team.id} />
+        )}
+      </Picker>}
         <View style={styles.buttonContainer}>
           <Button mode="outlined" onPress={handleHideModal} >
             Close
@@ -267,6 +314,9 @@ export default function Potentiostat() {
           </Button>
           {userLogged && <Button mode="contained" onPress={handleCreateExperimentUser} >
             Save for User
+          </Button>}
+          {userLogged && <Button mode="contained" onPress={handleCreateExperimentTeam} >
+            Save for Team
           </Button>}
 
         </View>
@@ -352,5 +402,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingVertical: 12,
     gap: 5
+  },
+  picker: {
+    height: 50,
+    marginBottom: 15,
   },
 });
