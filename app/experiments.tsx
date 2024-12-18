@@ -49,6 +49,7 @@ export default function Experiment() {
   }
 
   const hideModal = () => {
+    setNote("")
     setModal(false);
   }
 
@@ -58,6 +59,7 @@ export default function Experiment() {
     isUserLogged().then((a) => {
       setUserLogged(a);
     })
+    setNote("")
     setModal(false)
     setNoteExperiment(null)
     setIndex(0)
@@ -76,7 +78,21 @@ export default function Experiment() {
   }
 
   const handleSaveNote = () => {
-    noteExperiment && saveUserNotes(noteExperiment.id, note)
+    if(noteExperiment)
+    {
+      if(noteExperiment.userId)
+        saveUserNotes(noteExperiment.id, note)
+      else if(noteExperiment.teamId)
+        alert('Nota time')
+      else {
+        const notes = noteExperiment.notes
+                ? `${noteExperiment.notes}\n[${new Date().toISOString()}] - ${"Local Note"}\n${note}\n---------------------------------\n`
+                : `[${new Date().toISOString()}] - ${"Local Note"}\n${note}\n---------------------------------\n`
+        noteExperiment.notes = notes
+        saveJsonToFile(noteExperiment.name,noteExperiment)
+      }
+    }
+   
   }
 
 
@@ -88,7 +104,7 @@ export default function Experiment() {
           {localExperiments.length > 0 ? (
             localExperiments.map((experiment) => {
               if (selectedExperiments.find((x) => x.id == experiment.id))
-                return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity style={{ padding: 15 }} onPress={() => { setSelectedExperiments((experiments) => experiments.filter((ex) => ex.id != experiment.id)) }}><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="edit" /><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View>
+                return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity style={{ padding: 15 }} onPress={() => { setSelectedExperiments((experiments) => experiments.filter((ex) => ex.id != experiment.id)) }}><Text>{experiment.name}</Text></TouchableOpacity><View style={styles.btns}><IconButton onPress={() => handleOpenNotes(experiment)} style={{ height: 20, margin: 0 }} icon="pen" /><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View></View>
               return <View key={experiment.id} style={styles.teamName}><TouchableOpacity style={{ padding: 15 }} onPress={() => setSelectedExperiments((experiments) => [...experiments, experiment])}><Text>{experiment.name}</Text></TouchableOpacity><View style={styles.btns}><IconButton onPress={() => handleOpenNotes(experiment)} style={{ height: 20, margin: 0 }} icon="pen" /><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View></View>
             })
           ) : (
@@ -98,7 +114,7 @@ export default function Experiment() {
           {experiments.length > 0 ? (
             experiments.map((experiment) => {
               if (selectedExperiments.find((x) => x.id == experiment.id))
-                return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity style={{ padding: 15 }} onPress={() => { setSelectedExperiments((experiments) => experiments.filter((ex) => ex.id != experiment.id)) }}><Text>{experiment.name}</Text></TouchableOpacity><IconButton onPress={() => handleDeleteUser(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View>
+                return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity style={{ padding: 15 }} onPress={() => { setSelectedExperiments((experiments) => experiments.filter((ex) => ex.id != experiment.id)) }}><Text>{experiment.name}</Text></TouchableOpacity><View style={styles.btns}><IconButton onPress={() => handleOpenNotes(experiment)} style={{ height: 20, margin: 0 }} icon="pen" /><IconButton onPress={() => handleDeleteUser(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View></View>
               return <View key={experiment.id} style={styles.teamName}><TouchableOpacity style={{ padding: 15 }} onPress={() => setSelectedExperiments((experiments) => [...experiments, experiment])} ><Text>{experiment.name}</Text></TouchableOpacity><View style={styles.btns}><IconButton onPress={() => handleOpenNotes(experiment)} style={{ height: 20, margin: 0 }} icon="pen" /><IconButton onPress={() => handleDeleteUser(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View></View>
             })
           ) : (
