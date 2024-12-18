@@ -13,16 +13,16 @@ export default function Login() {
 
   const isFocused = useIsFocused();
 
-  useEffect(()=>{
+  useEffect(() => {
     setText("")
     setPassword("")
-  },[isFocused])
+  }, [isFocused])
 
   const loginHandler = async () => {
     const status = await login(text, password);
 
     if (status == 201) {
-      router.navigate('/simulation')
+      router.navigate('/experiments')
     }
     else if (status == 400) {
       alert("User or Password invalid!")

@@ -168,10 +168,10 @@ const styles = StyleSheet.create({
 });
 
 // Componente principal
-export const GraphScreen: React.FC<{ experiments: TExperiment[], actual: boolean }> = ({ experiments, actual }) => {
+export const GraphScreen: React.FC<{ experiments: TExperiment[], actual: boolean, width_height: number }> = ({ experiments, actual, width_height }) => {
   const newExperiments = experiments.filter((experiment) => experiment.graphData != null);
 
   if (newExperiments.length == 0 && !actual) return <Text>No experiment data available for the selected experiments</Text>
   if (newExperiments.length == 0 && actual) return <></>
-  return <CyclicVoltammetryGraph datasets={newExperiments} />;
+  return <CyclicVoltammetryGraph height={width_height} width={width_height} datasets={newExperiments} />;
 }

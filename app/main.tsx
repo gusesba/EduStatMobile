@@ -8,7 +8,7 @@ export default function Main() {
   const handleLocalUse = async () => {
     await removeStore('user_token')
     await removeStore('user_id')
-    router.navigate('/simulation')
+    router.navigate('/experiments')
   }
 
   return (

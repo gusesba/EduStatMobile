@@ -14,9 +14,9 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const [userLogged, setUserLogged] = useState<string|null|undefined>(null);
+  const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
 
-    const isFocused = useIsFocused();
+  const isFocused = useIsFocused();
 
   const fetchUserId = async () => {
     return getValueForStore('user_id');
@@ -37,9 +37,9 @@ export default function Chatbot() {
       }
     };
 
-    isUserLogged().then((a)=>{
-          setUserLogged(a);
-        })
+    isUserLogged().then((a) => {
+      setUserLogged(a);
+    })
 
     loadMessages()
     setMessage("")
@@ -82,8 +82,8 @@ export default function Chatbot() {
     }
   };
 
-  if(!userLogged)
-    return <NotLogged/>
+  if (!userLogged)
+    return <NotLogged />
 
   return (
     <View style={styles.container}>
@@ -176,6 +176,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loading: {
-    marginLeft: 10,
-  },
+    marginLeft: 10,
+  },
 });

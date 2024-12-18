@@ -9,6 +9,7 @@ import { TExperiment } from "./experiments";
 import { ScrollView } from "react-native-gesture-handler";
 import { createUserExperiment, saveJsonToFile, saveUserExperiment } from "./libs/experiments";
 import { isUserLogged } from "./libs/login";
+import { useIsFocused } from "@react-navigation/native";
 
 export const bleManager = new BleManager();
 const DATA_SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"; // * Get from the device manufacturer - 9800 for the BLE iOs Tester App "MyBLESim"
@@ -18,7 +19,6 @@ const CHARACTERISTIC_UUID_Param = "f27b53ad-c63d-49a0-8c0f-9f297e6cc520"; // * G
 export default function Potentiostat() {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
-  const [dataReceived, setDataReceived] = useState<string>("...waiting.");
   const [minVoltage, setMinVoltage] = useState<string>("");
   const [maxVoltage, setMaxVoltage] = useState<string>("");
   const [step, setStep] = useState<string>("");
@@ -27,12 +27,23 @@ export default function Potentiostat() {
   const [showModal, setShowModal] = useState(false);
   const [experimentName, setExperimentName] = useState('');
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     isUserLogged().then((a) => {
+
       setUserLogged(a);
     })
-  }, [])
+    //Zerando variaveis de estado
+    setMinVoltage("");
+    setMaxVoltage("");
+    setStep("");
+    setDelay("");
+    setPoints([]);
+    setExperimentName("");
+    setShowModal(false);
+    setConnectedDevice(null);
+  }, [isFocused])
 
   const handleCreateExperiment = async () => {
     const fileUri = await saveJsonToFile(experimentName, {
@@ -45,7 +56,7 @@ export default function Potentiostat() {
         delay
       }
     })
-    if(fileUri)
+    if (fileUri)
       alert("Experiment Saved!")
     else
       alert("Error saving experiment!")
@@ -120,21 +131,37 @@ export default function Potentiostat() {
       return;
     }
 
-    const dataInput = Base64.decode(characteristic.value);
+    try {
+      const dataInput = Base64.decode(characteristic.value);
 
-    // Divida a string por linhas
-    const lines = dataInput.split('\n'); // ["sentVoltage 1.234", "MeasuredVoltage 5.678"]
+      // Divida a string por linhas
+      const lines = dataInput.split('\n'); // ["1.234", "5.678"]
 
-    // Extraia os valores e crie o objeto
-    const result = {
-      x: parseFloat(lines[0]), // Pega "1.234" e converte para número
-      y: parseFloat(lines[1]) // Pega "5.678" e converte para número
-    };
+      // Extraia os valores e crie o objeto atual
+      const newPoint = {
+        x: parseFloat(lines[0]), // Converte para número
+        y: parseFloat(lines[1])  // Converte para número
+      };
 
+      setPoints((state) => {
+        // Combine o novo ponto com os últimos 10 pontos existentes
+        const lastTenPoints = state.slice(-10); // Pega os últimos 10 pontos
+        const allPoints = [...lastTenPoints, newPoint]; // Adiciona o novo ponto
 
-    setPoints((state)=>[...state,result])
+        // Calcule as médias de x e y
+        const avgX = allPoints.reduce((sum, point) => sum + point.x, 0) / allPoints.length;
+        const avgY = allPoints.reduce((sum, point) => sum + point.y, 0) / allPoints.length;
 
-    setDataReceived(dataInput);
+        // Cria o ponto médio
+        const averagedPoint = { x: avgX, y: avgY };
+
+        // Adiciona o ponto médio ao estado
+        return [...state, averagedPoint];
+      });
+
+    } catch (error) {
+      alert(JSON.stringify(error));
+    }
   };
 
   // Managers Central Mode - Connecting to a device
@@ -209,13 +236,13 @@ export default function Potentiostat() {
                   />
                 </View>
               </View>
-              <GraphScreen experiments={points.length > 1 ? [{
+              {/* <GraphScreen experiments={points.length > 1 ? [{
                 id: 'Experimento Atual', name: 'Experimento Atual', graphData: {
                   points
                 }
-              } as TExperiment] : []} actual={true} />
+              } as TExperiment] : []} actual={true} />   <GraphScreen actual={false} experiments={selectedExperiments.concat(meanExperiments)} />*/}
               <View style={styles.buttonContainer}>
-                {points.length > 0 && <Button mode='contained' onPress={()=>setPoints([])}>Clear</Button>}
+                {points.length > 0 && <Button mode='contained' onPress={() => setPoints([])}>Clear</Button>}
                 <Button mode='contained' onPress={sendMessageToDevice}>Start Measurement</Button>
                 <Button mode='contained' onPress={handleShowModal}>Save</Button>
               </View>

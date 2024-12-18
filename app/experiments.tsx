@@ -1,7 +1,7 @@
 import { GraphScreen } from "@/components/graphComponent";
 import { useEffect, useState } from "react";
 import { deleteJsonFile, deleteUserExperiment, getTeamExperiments, getUserExperiments, readEdsJsonFiles, saveJsonToFile, saveUserNotes } from "./libs/experiments";
-import { StyleSheet, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import { BottomNavigation, Button, IconButton, Modal, Text, TextInput } from "react-native-paper";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { isUserLogged } from "./libs/login";
@@ -24,9 +24,10 @@ export type TExperiment = {
   userId: string
 }
 
+
 export default function Experiment() {
   const [index, setIndex] = useState(0);
-  const [noteExperiment,setNoteExperiment] = useState<TExperiment|null>(null);
+  const [noteExperiment, setNoteExperiment] = useState<TExperiment | null>(null);
   const [modal, setModal] = useState(false);
   const [note, setNote] = useState("")
   const [selectedExperiments, setSelectedExperiments] = useState<TExperiment[]>([])
@@ -41,18 +42,19 @@ export default function Experiment() {
 
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
 
-  const handleOpenNotes = (experiment:TExperiment) => {
+  const isFocused = useIsFocused();
+  const handleOpenNotes = (experiment: TExperiment) => {
     setNoteExperiment(experiment)
     setModal(true);
   }
 
-  const hideModal = () =>{
+  const hideModal = () => {
     setModal(false);
   }
 
-    const isFocused = useIsFocused();
-
+  const width = Dimensions.get('window').width;
   useEffect(() => {
+    //setExperiments([])
     isUserLogged().then((a) => {
       setUserLogged(a);
     })
@@ -61,7 +63,6 @@ export default function Experiment() {
     setIndex(0)
     setSelectedExperiments([])
     setMeanExperiments([])
-    setExperiments([])
     setLocalExperiments([])
   }, [isFocused])
 
@@ -75,7 +76,7 @@ export default function Experiment() {
   }
 
   const handleSaveNote = () => {
-    noteExperiment && saveUserNotes(noteExperiment.id,note)
+    noteExperiment && saveUserNotes(noteExperiment.id, note)
   }
 
 
@@ -108,7 +109,7 @@ export default function Experiment() {
       </>
     ),
     graph: () => {
-      return <View><GraphScreen actual={false} experiments={selectedExperiments.concat(meanExperiments)} /><Button onPress={handleCalculateMean}>Mean</Button></View>
+      return <View className="m-16" ><GraphScreen width_height={width * 0.9} actual={false} experiments={selectedExperiments.concat(meanExperiments)} /><Button onPress={handleCalculateMean}>Mean</Button></View>
     },
     notes: () => (
       <>
@@ -170,8 +171,10 @@ export default function Experiment() {
   useEffect(() => {
     if (userLogged) {
       handleGetUserExperiments();
+    } else {
+      setExperiments([])
     }
-  }, [userLogged])
+  }, [userLogged, isFocused])
 
   useEffect(() => {
     handleGetLocalExperiments();
@@ -192,10 +195,10 @@ export default function Experiment() {
   return (
     <>
       <BottomNavigation
-      navigationState={{ index, routes }}
-      onIndexChange={setIndex}
-      renderScene={renderScene}
-      shifting={false} // Shifting animation for active tabs
+        navigationState={{ index, routes }}
+        onIndexChange={setIndex}
+        renderScene={renderScene}
+        shifting={false} // Shifting animation for active tabs
       />
       <Modal visible={modal} onDismiss={hideModal} contentContainerStyle={styles.modalContainer}>
         <TextInput
@@ -248,9 +251,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     margin: 10
   },
-  btns:{
-    flexDirection:'row',
-    gap:5
+  btns: {
+    flexDirection: 'row',
+    gap: 5
   },
   modalContainer: {
     backgroundColor: 'white',
