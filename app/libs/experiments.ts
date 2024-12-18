@@ -279,3 +279,30 @@ export const saveTeamExperiment = async (experiment:TExperiment,teamId:string) =
       return [error,error.response?.status || 500]; // Retorna 500 como fallback se `response` não existir
   }
 }
+
+export const saveTeamNotes = async (experimentId:string,notes:string,teamId:string) => {
+    const user_token = await getValueForStore('user_token'); 
+    if (!user_token) {
+        alert("User must be signed in!");
+        return [[],0];
+    }
+
+    try {
+        const response = await axios({
+            method:'post',
+            url: baseUrl + '/append-team-experiment-notes',
+            headers: {
+                Authorization: `Bearer ${user_token}` // Adiciona o token no cabeçalho
+            },
+            data:{
+              experimentId,
+              notes,
+              teamId
+            }
+        })
+        return [response.data,response.status]
+    }
+    catch (error: any) {
+        return [error,error.response?.status || 500]; // Retorna 500 como fallback se `response` não existir
+    }
+}

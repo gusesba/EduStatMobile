@@ -1,11 +1,12 @@
 import { GraphScreen } from "@/components/graphComponent";
 import { useEffect, useState } from "react";
-import { deleteJsonFile, deleteUserExperiment, getTeamExperiments, getUserExperiments, readEdsJsonFiles, saveJsonToFile, saveUserNotes } from "./libs/experiments";
+import { deleteJsonFile, deleteUserExperiment, getTeamExperiments, getUserExperiments, readEdsJsonFiles, saveJsonToFile, saveTeamNotes, saveUserNotes } from "./libs/experiments";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { BottomNavigation, Button, IconButton, Modal, Text, TextInput } from "react-native-paper";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { isUserLogged } from "./libs/login";
 import { useIsFocused } from "@react-navigation/native";
+import { getTeams } from "./libs/teams";
 
 export type TExperiment = {
   id: string,
@@ -39,6 +40,8 @@ export default function Experiment() {
   ]);
   const [experiments, setExperiments] = useState<TExperiment[]>([]);
   const [localExperiments, setLocalExperiments] = useState<TExperiment[]>([]);
+  const [teamExperiments, setTeamExperiments] = useState<TExperiment[]>([]);
+  const [teams,setTeams] = useState<{name:string,id:string}[]>([])
 
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
 
@@ -53,12 +56,38 @@ export default function Experiment() {
     setModal(false);
   }
 
+  useEffect(() => {
+      if(userLogged){
+        getTeamsHandler()
+      }
+    },[userLogged,isFocused])
+
+  useEffect(()=> {
+    Promise.all(
+      teams.map(async (team) => {
+        return await getTeamExperiments(team.id);
+      })
+    ).then((x)=>setExperiments(x.flat()));
+  },[teams])
+
+  const getTeamsHandler = async () => {
+      const [teams, status] = await getTeams()
+      
+      if(status == 200)
+      {
+        setTeams(teams)
+      }
+      else
+        alert("Unknown Error!")
+    }
+
   const width = Dimensions.get('window').width;
   useEffect(() => {
     //setExperiments([])
     isUserLogged().then((a) => {
       setUserLogged(a);
     })
+    setTeamExperiments([])
     setNote("")
     setModal(false)
     setNoteExperiment(null)
@@ -66,6 +95,7 @@ export default function Experiment() {
     setSelectedExperiments([])
     setMeanExperiments([])
     setLocalExperiments([])
+    setTeams([])
   }, [isFocused])
 
   const handleDeleteLocal = (id: string) => {
@@ -83,7 +113,7 @@ export default function Experiment() {
       if(noteExperiment.userId)
         saveUserNotes(noteExperiment.id, note)
       else if(noteExperiment.teamId)
-        alert('Nota time')
+        saveTeamNotes(noteExperiment.id,note,noteExperiment.teamId)
       else {
         const notes = noteExperiment.notes
                 ? `${noteExperiment.notes}\n[${new Date().toISOString()}] - ${"Local Note"}\n${note}\n---------------------------------\n`
@@ -120,7 +150,16 @@ export default function Experiment() {
           ) : (
             <Text style={{ marginLeft: 10 }}>No User Experiments Available.</Text>
           )}
-
+          <Text style={styles.expTitle}>Teams Experiments</Text>
+          {teamExperiments.length > 0 ? (
+            teamExperiments.map((experiment) => {
+              if (selectedExperiments.find((x) => x.id == experiment.id))
+                return <View key={experiment.id} style={styles.teamNameSelected}><TouchableOpacity style={{ padding: 15 }} onPress={() => { setSelectedExperiments((experiments) => experiments.filter((ex) => ex.id != experiment.id)) }}><Text>{experiment.name}</Text></TouchableOpacity><View style={styles.btns}><IconButton onPress={() => handleOpenNotes(experiment)} style={{ height: 20, margin: 0 }} icon="pen" /><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View></View>
+              return <View key={experiment.id} style={styles.teamName}><TouchableOpacity style={{ padding: 15 }} onPress={() => setSelectedExperiments((experiments) => [...experiments, experiment])}><Text>{experiment.name}</Text></TouchableOpacity><View style={styles.btns}><IconButton onPress={() => handleOpenNotes(experiment)} style={{ height: 20, margin: 0 }} icon="pen" /><IconButton onPress={() => handleDeleteLocal(experiment.id)} style={{ height: 20, margin: 0 }} icon="delete" /></View></View>
+            })
+          ) : (
+            <Text style={{ marginLeft: 10 }}>No Team Experiments Available.</Text>
+          )}
         </View>
       </>
     ),
