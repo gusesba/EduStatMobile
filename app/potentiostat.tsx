@@ -32,7 +32,7 @@ export default function Potentiostat() {
   const [teams,setTeams] = useState<{name:string,id:string}[]>([])
   const [expTeam, setExpTeam] = useState("");
   const isFocused = useIsFocused();
-
+  const [lastData, setLastData] = useState("");
   useEffect(() => {
     isUserLogged().then((a) => {
 
@@ -47,7 +47,6 @@ export default function Potentiostat() {
     setPoints([]);
     setExperimentName("");
     setShowModal(false);
-    setConnectedDevice(null);
   }, [isFocused])
 
   useEffect(() => {
@@ -171,7 +170,7 @@ export default function Potentiostat() {
 
     try {
       const dataInput = Base64.decode(characteristic.value);
-
+      setLastData(dataInput);
       // Divida a string por linhas
       const lines = dataInput.split('\n'); // ["1.234", "5.678"]
 
@@ -183,18 +182,18 @@ export default function Potentiostat() {
 
       setPoints((state) => {
         // Combine o novo ponto com os últimos 10 pontos existentes
-        const lastTenPoints = state.slice(-10); // Pega os últimos 10 pontos
-        const allPoints = [...lastTenPoints, newPoint]; // Adiciona o novo ponto
+        //const lastTenPoints = state.slice(-10); // Pega os últimos 10 pontos
+        //const allPoints = [...lastTenPoints, newPoint]; // Adiciona o novo ponto
 
         // Calcule as médias de x e y
-        const avgX = allPoints.reduce((sum, point) => sum + point.x, 0) / allPoints.length;
-        const avgY = allPoints.reduce((sum, point) => sum + point.y, 0) / allPoints.length;
+       // const avgX = allPoints.reduce((sum, point) => sum + point.x, 0) / allPoints.length;
+       // const avgY = allPoints.reduce((sum, point) => sum + point.y, 0) / allPoints.length;
 
         // Cria o ponto médio
-        const averagedPoint = { x: avgX, y: avgY };
+       // const averagedPoint = { x: avgX, y: avgY };
 
         // Adiciona o ponto médio ao estado
-        return [...state, averagedPoint];
+        return [...state, newPoint];
       });
 
     } catch (error) {
@@ -274,6 +273,7 @@ export default function Potentiostat() {
                   />
                 </View>
               </View>
+              <Text>{lastData}</Text>
               {/* <GraphScreen experiments={points.length > 1 ? [{
                 id: 'Experimento Atual', name: 'Experimento Atual', graphData: {
                   points

@@ -46,6 +46,26 @@ export default function Experiment() {
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
 
   const isFocused = useIsFocused();
+
+  const addMeanExp = (experiment:TExperiment) => {
+    const smoothedPoints = experiment.graphData.points.map((_, index, arr) => {
+      const start = Math.max(0, index - 9); // Start index for the last 10 points
+      const slice = arr.slice(start, index + 1); // Get the last 10 points including current
+      const meanX = slice.reduce((sum, point) => sum + point.x, 0) / slice.length;
+      const meanY = slice.reduce((sum, point) => sum + point.y, 0) / slice.length;
+      return { x: meanX, y: meanY };
+    });
+  
+    setSelectedExperiments((exps) => [...exps,{
+      ...experiment,
+      graphData: {
+        ...experiment.graphData,
+        points: smoothedPoints,
+      },
+      name:`${experiment.name} mean`
+    }])
+  }
+
   const handleOpenNotes = (experiment: TExperiment) => {
     setNoteExperiment(experiment)
     setModal(true);
@@ -164,7 +184,7 @@ export default function Experiment() {
       </>
     ),
     graph: () => {
-      return <View className="m-16" ><GraphScreen width_height={width * 0.9} actual={false} experiments={selectedExperiments.concat(meanExperiments)} /><Button onPress={handleCalculateMean}>Mean</Button></View>
+      return <View className="m-16" ><GraphScreen width_height={width * 0.9} actual={false} experiments={selectedExperiments.concat(meanExperiments)} /><Button onPress={handleCalculateMean}>Mean</Button><Button >Test</Button></View>
     },
     notes: () => (
       <>
