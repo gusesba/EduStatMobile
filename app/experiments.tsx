@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { deleteJsonFile, deleteUserExperiment, getTeamExperiments, getUserExperiments, readEdsJsonFiles, saveJsonToFile, saveTeamNotes, saveUserNotes } from "./libs/experiments";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { BottomNavigation, Button, IconButton, Modal, Text, TextInput } from "react-native-paper";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { isUserLogged } from "./libs/login";
 import { useIsFocused } from "@react-navigation/native";
 import { getTeams } from "./libs/teams";
@@ -150,6 +150,7 @@ export default function Experiment() {
     experiments: () => (
       <>
         <View style={styles.tabTeamContent}>
+          <ScrollView>
           <Text style={styles.expTitle}>Local Experiments</Text>
           {localExperiments.length > 0 ? (
             localExperiments.map((experiment) => {
@@ -180,6 +181,7 @@ export default function Experiment() {
           ) : (
             <Text style={{ marginLeft: 10 }}>No Team Experiments Available.</Text>
           )}
+          </ScrollView>
         </View>
       </>
     ),
@@ -200,7 +202,8 @@ export default function Experiment() {
 
   const handleCalculateMean = () => {
     const meanPoints = calculateMeanGraphFromExperiments(selectedExperiments);
-    setMeanExperiments([{ name: 'mean', graphData: { points: meanPoints } } as TExperiment])
+    if(meanPoints)
+      setMeanExperiments([{ name: 'mean', graphData: { points: meanPoints } } as TExperiment])
   }
 
   useEffect(() => {
@@ -221,26 +224,42 @@ export default function Experiment() {
   }
 
   // Function to calculate the mean graph from a list of TExperiment objects
-  function calculateMeanGraphFromExperiments(experiments: TExperiment[]): { x: number; y: number }[] {
+  function calculateMeanGraphFromExperiments(experiments: TExperiment[]): { x: number; y: number }[] | null {
     if (!experiments || experiments.length === 0) {
       throw new Error("Experiment list cannot be empty.");
     }
 
-    // Combine all unique x-values from the graphs
-    const xValues = [
-      ...new Set(
-        experiments.flatMap(exp => exp.graphData.points.map(point => point.x))
-      ),
-    ].sort((a, b) => a - b);
+    experiments = experiments.filter((exp)=>{
+      return exp.graphData && exp.graphData.points && exp.graphData.points.length>0
+    })
 
-    // Calculate mean points
-    const meanPoints = xValues.map(x => {
-      const yValues = experiments.map(exp => interpolateY(exp.graphData.points, x));
-      const meanY = yValues.reduce((sum, y) => sum + y, 0) / yValues.length;
-      return { x, y: meanY };
-    });
+    const len = experiments[0].graphData.points.length
 
-    return meanPoints;
+    for(var exp of experiments){
+      if(exp.graphData.points.length != len)
+      {
+        alert('Experiments should have the same parameters')
+        return null;
+      }
+    }
+
+    for(var i = 0; i<len; i++){
+      var x = experiments[0].graphData.points[i].x
+      for(var exp of experiments){
+        if(exp.graphData.points[i].x != x){
+          alert('Experiments should have the same parameters')
+          return null;
+        }
+      }
+    }
+    var points:{x:number,y:number}[] = [];
+    for(var i = 0; i<len; i++){
+      var total = 0;
+      for(var exp of experiments)
+        total += exp.graphData.points[i].y
+      points = [...points, {x:experiments[0].graphData.points[i].x,y:total/experiments.length}]
+    }
+    return points;
   }
 
   useEffect(() => {
