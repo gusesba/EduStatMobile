@@ -53,11 +53,7 @@ export default function Settings() {
       },[userLogged,isFocused])
   
     useEffect(()=> {
-      Promise.all(
-        teams.map(async (team) => {
-          return await getTeamExperiments(team.id);
-        })
-      ).then((x)=>setTeamsExp(x.flat().length));
+      setTeamsExp(teams.length)
     },[teams])
 
   if (!userLogged)

@@ -102,12 +102,20 @@ export default function Experiment() {
     },[userLogged,isFocused, addNote])
 
   useEffect(()=> {
-    Promise.all(
-      teams.map(async (team) => {
-        return await getTeamExperiments(team.id);
-      })
-    ).then((x)=>setTeamExperiments(x.flat()));
+    handleGetTeamsExp()
+   
   },[teams])
+
+  const handleGetTeamsExp = async ()=> {
+    var exps = []
+    for(var team of teams)
+      {
+        var [teamexp,_] = await getTeamExperiments(team.id)
+        console.log(teamexp)
+        exps = [...exps,...teamexp]
+      }
+    setTeamExperiments(exps);
+  }
 
   const getTeamsHandler = async () => {
       const [teams, status] = await getTeams()
