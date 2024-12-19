@@ -32,6 +32,7 @@ export default function Experiment() {
   const [modal, setModal] = useState(false);
   const [note, setNote] = useState("")
   const [selectedExperiments, setSelectedExperiments] = useState<TExperiment[]>([])
+  const [selectedNoiseExperiments, setSelectedNoiseExperiments] = useState<TExperiment[]>([])
   const [meanExperiments, setMeanExperiments] = useState<TExperiment[]>([])
   const [routes] = useState([
     { key: 'experiments', title: 'Experiments', icon: 'account-group' },
@@ -42,29 +43,47 @@ export default function Experiment() {
   const [localExperiments, setLocalExperiments] = useState<TExperiment[]>([]);
   const [teamExperiments, setTeamExperiments] = useState<TExperiment[]>([]);
   const [teams,setTeams] = useState<{name:string,id:string}[]>([])
+  const [noise,setNoise] = useState(false);
+  const [addNote, setAddNote] = useState(false);
 
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
 
   const isFocused = useIsFocused();
 
-  const addMeanExp = (experiment:TExperiment) => {
-    const smoothedPoints = experiment.graphData.points.map((_, index, arr) => {
-      const start = Math.max(0, index - 9); // Start index for the last 10 points
-      const slice = arr.slice(start, index + 1); // Get the last 10 points including current
-      const meanX = slice.reduce((sum, point) => sum + point.x, 0) / slice.length;
-      const meanY = slice.reduce((sum, point) => sum + point.y, 0) / slice.length;
-      return { x: meanX, y: meanY };
-    });
+  const removeNoise = (experiment: TExperiment): TExperiment => {
+    if (!experiment.graphData || !experiment.graphData.points) return experiment;
   
-    setSelectedExperiments((exps) => [...exps,{
+    const points = [...experiment.graphData.points]; // Preserva a imutabilidade
+    const length = points.length;
+  
+    if (length === 0) return experiment;
+  
+    // Soma acumulada para otimização
+    let cumulativeSum = 0;
+  
+    // Suavização para os primeiros 9 pontos
+    for (let i = 0; i < Math.min(9, length); i++) {
+      cumulativeSum += points[i].y;
+      points[i] = { ...points[i], y: cumulativeSum / (i + 1) };
+    }
+  
+    // Suavização para os pontos restantes
+    for (let i = 9; i < length; i++) {
+      cumulativeSum += points[i].y - (points[i - 10]?.y || 0);
+      points[i] = { ...points[i], y: cumulativeSum / 10 };
+    }
+  
+    return {
       ...experiment,
-      graphData: {
-        ...experiment.graphData,
-        points: smoothedPoints,
-      },
-      name:`${experiment.name} mean`
-    }])
-  }
+      graphData: { ...experiment.graphData, points },
+    };
+  };
+  
+
+  useEffect(()=>{
+    const noNoiseExp = selectedExperiments.map((exp)=>removeNoise(exp))
+    setSelectedNoiseExperiments(noNoiseExp);
+  },[selectedExperiments])
 
   const handleOpenNotes = (experiment: TExperiment) => {
     setNoteExperiment(experiment)
@@ -80,7 +99,7 @@ export default function Experiment() {
       if(userLogged){
         getTeamsHandler()
       }
-    },[userLogged,isFocused])
+    },[userLogged,isFocused, addNote])
 
   useEffect(()=> {
     Promise.all(
@@ -113,10 +132,11 @@ export default function Experiment() {
     setNoteExperiment(null)
     setIndex(0)
     setSelectedExperiments([])
+    setSelectedNoiseExperiments([])
     setMeanExperiments([])
     setLocalExperiments([])
     setTeams([])
-  }, [isFocused])
+  }, [isFocused,addNote])
 
   const handleDeleteLocal = (id: string) => {
     deleteJsonFile(id).then(() => handleGetLocalExperiments());
@@ -127,21 +147,25 @@ export default function Experiment() {
     handleGetUserExperiments();
   }
 
+  const update = ()=> setAddNote((note)=>!note)
+
   const handleSaveNote = () => {
     if(noteExperiment)
     {
       if(noteExperiment.userId)
-        saveUserNotes(noteExperiment.id, note)
+        saveUserNotes(noteExperiment.id, note+"      ").then(update)
       else if(noteExperiment.teamId)
-        saveTeamNotes(noteExperiment.id,note,noteExperiment.teamId)
+        saveTeamNotes(noteExperiment.id,note+"       ",noteExperiment.teamId).then(update)
       else {
         const notes = noteExperiment.notes
                 ? `${noteExperiment.notes}\n[${new Date().toISOString()}] - ${"Local Note"}\n${note}\n---------------------------------\n`
                 : `[${new Date().toISOString()}] - ${"Local Note"}\n${note}\n---------------------------------\n`
         noteExperiment.notes = notes
-        saveJsonToFile(noteExperiment.name,noteExperiment)
+        saveJsonToFile(noteExperiment.name,noteExperiment).then(update)
       }
     }
+
+    setAddNote((note)=>!note);
    
   }
 
@@ -186,7 +210,7 @@ export default function Experiment() {
       </>
     ),
     graph: () => {
-      return <View className="m-16" ><GraphScreen width_height={width * 0.9} actual={false} experiments={selectedExperiments.concat(meanExperiments)} /><Button onPress={handleCalculateMean}>Mean</Button><Button >Test</Button></View>
+      return <View className="m-16" >{noise ? <GraphScreen width_height={width * 0.9} actual={false} experiments={selectedNoiseExperiments.concat(meanExperiments)} /> :<GraphScreen width_height={width * 0.9} actual={false} experiments={selectedExperiments.concat(meanExperiments)} />}{selectedExperiments.filter((exp)=>exp.graphData!=null).length>0 && <><Button onPress={handleCalculateMean}>Mean</Button><Button onPress={()=>setNoise((noise)=>!noise)} >{noise ? "Remove Noise" : "Add Noise"}</Button></>}</View>
     },
     notes: () => (
       <>
@@ -201,7 +225,9 @@ export default function Experiment() {
   })
 
   const handleCalculateMean = () => {
-    const meanPoints = calculateMeanGraphFromExperiments(selectedExperiments);
+    var meanPoints:{x:number,y:number}[] | null = [] 
+    if(!noise) meanPoints = calculateMeanGraphFromExperiments(selectedExperiments);
+    else meanPoints = calculateMeanGraphFromExperiments(selectedNoiseExperiments)
     if(meanPoints)
       setMeanExperiments([{ name: 'mean', graphData: { points: meanPoints } } as TExperiment])
   }
@@ -226,7 +252,7 @@ export default function Experiment() {
   // Function to calculate the mean graph from a list of TExperiment objects
   function calculateMeanGraphFromExperiments(experiments: TExperiment[]): { x: number; y: number }[] | null {
     if (!experiments || experiments.length === 0) {
-      throw new Error("Experiment list cannot be empty.");
+      return null
     }
 
     experiments = experiments.filter((exp)=>{
@@ -268,7 +294,7 @@ export default function Experiment() {
     } else {
       setExperiments([])
     }
-  }, [userLogged, isFocused])
+  }, [userLogged, isFocused, addNote])
 
   useEffect(() => {
     handleGetLocalExperiments();
