@@ -106,7 +106,7 @@ export default function Experiment() {
       teams.map(async (team) => {
         return await getTeamExperiments(team.id);
       })
-    ).then((x)=>setExperiments(x.flat()));
+    ).then((x)=>setTeamExperiments(x.flat()));
   },[teams])
 
   const getTeamsHandler = async () => {

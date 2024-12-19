@@ -50,3 +50,27 @@ catch(error : any)
 export const isUserLogged = async () => {
   return await getValueForStore('user_token');
 }
+
+export const profile = async () => {
+  const user_token = await getValueForStore('user_token'); 
+  if (!user_token) {
+      alert("User must be signed in!");
+      return [[],0];
+  }
+
+  try {
+      const response = await axios({
+          method:'get',
+          url: baseUrl + '/me',
+          headers: {
+              Authorization: `Bearer ${user_token}` // Adiciona o token no cabeçalho
+          }
+      })
+      console.log(response.data.user)
+      return [response.data.user,response.status]
+  }
+  catch (error: any) {
+      console.log(error)
+      return [error,error.response?.status || 500]; // Retorna 500 como fallback se `response` não existir
+  }
+}
