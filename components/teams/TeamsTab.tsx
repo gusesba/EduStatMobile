@@ -1,6 +1,5 @@
-import { View } from "react-native-reanimated/lib/typescript/Animated";
 import React, { Dispatch, SetStateAction, useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Button, Modal, Text, TextInput } from "react-native-paper";
 import { createTeam } from "@/app/libs/teams";
 
@@ -130,7 +129,7 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: 20,
     width: 50,
-    height: 5,
+    height: 50,
   },
   plusSign: {
     fontSize: 20,
