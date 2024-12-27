@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
-import { Button, Modal, Text, TextInput } from "react-native-paper";
-import { createTeam } from "@/app/libs/teams";
+import { Button, Text } from "react-native-paper";
+import AddTeamModal from "./modals/AddTeamModal";
 
 interface TeamsTabProps {
   selectedTeam: string;
@@ -17,23 +17,7 @@ export default function TeamsTab({
   const [visible, setVisible] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => {
-    setTeamName("");
     setVisible(false);
-  };
-  const [teamName, setTeamName] = useState("");
-
-  const handleCreateTeam = async () => {
-    if (teamName === "") return;
-
-    const status = await createTeam(teamName);
-
-    if (status === 200) {
-      alert("Team created successfully!");
-      setTeamName("");
-      hideModal();
-    } else {
-      alert("Unknown Error!");
-    }
   };
 
   return (
@@ -74,35 +58,7 @@ export default function TeamsTab({
       >
         +
       </Button>
-
-      <Modal
-        visible={visible}
-        onDismiss={hideModal}
-        contentContainerStyle={styles.modalContainer}
-      >
-        <TextInput
-          mode="outlined"
-          label="Team Name"
-          value={teamName}
-          onChangeText={(text) => setTeamName(text)}
-        />
-        <View style={styles.buttonContainer}>
-          <Button
-            mode="outlined"
-            onPress={hideModal}
-            style={styles.modalButton}
-          >
-            Close
-          </Button>
-          <Button
-            mode="contained"
-            onPress={handleCreateTeam}
-            style={styles.modalButton}
-          >
-            OK
-          </Button>
-        </View>
-      </Modal>
+      <AddTeamModal visible={visible} hideModal={hideModal} />
     </>
   );
 }
@@ -145,18 +101,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "flex-start",
-  },
-  modalContainer: {
-    backgroundColor: "white",
-    padding: 20,
-    margin: 40,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 20,
-  },
-  modalButton: {
-    width: 100,
   },
 });
