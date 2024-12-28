@@ -20,14 +20,14 @@ export default function InvitesTab({}: InvitesTabProps) {
     const [invites, status] = await getInvites();
     if (status == 200) {
       setInvites(invites);
-    } else alert("Unknown Error!");
+    } else alert("Error Getting Invites!");
   };
 
   const handleAcceptInvite = async (id: string) => {
     const [_, status] = await acceptInvite(id);
     if (status == 200) {
       getInvitesHandler();
-    } else alert("Unknown Error!");
+    } else alert("Error Accepting Invites!");
   };
 
   useEffect(() => {

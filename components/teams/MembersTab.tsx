@@ -15,18 +15,18 @@ export default function MembersTab({ selectedTeam }: MembersTabProps) {
   const showModal = () => setVisible(true);
   const hideModal = () => {
     setVisible(false);
-
-    const getTeamUsersHandler = async () => {
-      const [users, status] = await getUsers(selectedTeam);
-      if (status == 200) {
-        setUsers(users);
-      } else alert("Unknown Error!");
-    };
-
-    useEffect(() => {
-      getTeamUsersHandler();
-    }, [selectedTeam]);
   };
+
+  const getTeamUsersHandler = async () => {
+    const [users, status] = await getUsers(selectedTeam);
+    if (status == 200) {
+      setUsers(users);
+    } else alert("Error Getting TeamUsers!");
+  };
+
+  useEffect(() => {
+    getTeamUsersHandler();
+  }, [selectedTeam]);
 
   return (
     <>

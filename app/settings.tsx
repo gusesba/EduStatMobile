@@ -1,63 +1,58 @@
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { View, StyleSheet} from 'react-native';
-import {Button, Card, Divider, Text, TextInput} from 'react-native-paper';
-import { isUserLogged, profile } from './libs/login';
-import { useIsFocused } from '@react-navigation/native';
-import NotLogged from '@/components/NotLogged';
-import { getTeamExperiments } from './libs/experiments';
-import { getTeams } from './libs/teams';
-import { ScrollView } from 'react-native-gesture-handler';
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { Button, Card, Divider, Text, TextInput } from "react-native-paper";
+import { isUserLogged, profile } from "./libs/login";
+import { useIsFocused } from "@react-navigation/native";
+import NotLogged from "@/components/NotLogged";
+import { getTeamExperiments } from "./libs/experiments";
+import { getTeams } from "./libs/teams";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function Settings() {
-
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
   const isFocused = useIsFocused();
 
   const [user, setUser] = useState("");
-  const [email,setEmail] = useState("");
-  const [teams,setTeams] = useState<{name:string,id:string}[]>([])
-  const [teamsExp, setTeamsExp] = useState(0)
-
-  useEffect(()=>{
-    handleSetUser()
-  },[userLogged])
-
-  useEffect(()=>{
-    isUserLogged().then((a) => {
-          setUserLogged(a);
-        })
-  },[isFocused])
-
-  const handleSetUser = async () => {
-    const [data,_] = await profile()
-    setUser(data.name)
-    setEmail(data.email)
-  }
-
-  const getTeamsHandler = async () => {
-        const [teams, status] = await getTeams()
-        
-        if(status == 200)
-        {
-          setTeams(teams)
-        }
-        else
-          alert("Unknown Error!")
-      }
+  const [email, setEmail] = useState("");
+  const [teams, setTeams] = useState<{ name: string; id: string }[]>([]);
+  const [teamsExp, setTeamsExp] = useState(0);
 
   useEffect(() => {
-        if(userLogged){
-          getTeamsHandler()
-        }
-      },[userLogged,isFocused])
-  
-    useEffect(()=> {
-      setTeamsExp(teams.length)
-    },[teams])
+    handleSetUser();
+  }, [userLogged]);
 
-  if (!userLogged)
-    return <NotLogged />
+  useEffect(() => {
+    isUserLogged().then((a) => {
+      setUserLogged(a);
+    });
+  }, [isFocused]);
+
+  const handleSetUser = async () => {
+    const [data, _] = await profile();
+    setUser(data.name);
+    setEmail(data.email);
+  };
+
+  const getTeamsHandler = async () => {
+    const [teams, status] = await getTeams();
+
+    if (status == 200) {
+      setTeams(teams);
+    } else alert("Error Getting Teams!");
+  };
+
+  useEffect(() => {
+    if (userLogged) {
+      getTeamsHandler();
+    }
+  }, [userLogged, isFocused]);
+
+  useEffect(() => {
+    setTeamsExp(teams.length);
+  }, [teams]);
+
+  if (!userLogged) return <NotLogged />;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -82,33 +77,33 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   card: {
     marginVertical: 20,
     padding: 15,
     borderRadius: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     elevation: 3,
   },
   label: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginTop: 10,
   },
   value: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginVertical: 5,
   },
   divider: {
     marginVertical: 10,
-    backgroundColor: '#ddd',
+    backgroundColor: "#ddd",
   },
   button: {
     marginTop: 20,
     borderRadius: 10,
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingHorizontal: 20,
   },
 });

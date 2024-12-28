@@ -14,11 +14,11 @@ export default function ExperimentsTab({ selectedTeam }: ExperimentsTabProps) {
     const [experiments, status] = await getTeamExperiments(selectedTeam);
     if (status == 200) {
       setExperiments(experiments);
-    } else alert("Unknown Error!");
+    } else alert("Error Getting Team Experiments!");
   };
 
   useEffect(() => {
-    getTeamExperimentsHandler();
+    if (selectedTeam) getTeamExperimentsHandler();
   }, [selectedTeam]);
 
   return (

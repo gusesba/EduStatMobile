@@ -24,7 +24,7 @@ export default function AddTeamModal({
       setTeamName("");
       hideModal();
     } else {
-      alert("Unknown Error!");
+      alert("Error Creating Team!");
     }
   };
 

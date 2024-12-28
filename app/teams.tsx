@@ -43,7 +43,7 @@ export default function Teams() {
 
     if (status == 200) {
       setTeams(teams);
-    } else alert("Unknown Error!");
+    } else alert("Error Getting Teams!");
   };
 
   // Define what each tab renders
