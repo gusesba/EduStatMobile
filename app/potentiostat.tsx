@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import {
@@ -23,6 +23,7 @@ import { isUserLogged } from "./libs/login";
 import { useIsFocused } from "@react-navigation/native";
 import { getTeams } from "./libs/teams";
 import { Picker } from "@react-native-picker/picker";
+import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
 
 export const bleManager = new BleManager();
 const DATA_SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"; // * Get from the device manufacturer - 9800 for the BLE iOs Tester App "MyBLESim"
@@ -44,11 +45,15 @@ export default function Potentiostat() {
   const [expTeam, setExpTeam] = useState("");
   const isFocused = useIsFocused();
   const [lastData, setLastData] = useState("");
+  const [estimatedTime, setEstimatedTime] = useState(0);
+  // const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     isUserLogged().then((a) => {
       setUserLogged(a);
     });
     //Zerando variaveis de estado
+    //setLastData("0\n0");
     setTeams([]);
     setMinVoltage("");
     setMaxVoltage("");
@@ -64,7 +69,17 @@ export default function Potentiostat() {
       getTeamsHandler();
     }
   }, [userLogged, isFocused]);
-
+  useEffect(() => {
+    if (estimatedTime > 0) {
+      const interval = setInterval(() => {
+        setEstimatedTime(estimatedTime - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+    // else if (estimatedTime <= 0 && intervalRef.current) {
+    //   stopSimulation();
+    // }
+  }, [estimatedTime]);
   const getTeamsHandler = async () => {
     const [teams, status] = await getTeams();
 
@@ -213,7 +228,39 @@ export default function Potentiostat() {
       alert(JSON.stringify(error));
     }
   };
+  // const startSimulation = () => {
+  //   if (intervalRef.current) return; // Evita múltiplas execuções
 
+  //   let step = 0;
+  //   const totalSteps = 200;
+  //   const range = 2;
+  //   let direction = 1;
+  //   let x = -range;
+  //   const stepSize = (range * 2) / totalSteps;
+
+  //   intervalRef.current = setInterval(() => {
+  //     if (step >= totalSteps) {
+  //       direction *= -1; // Inverte a direção
+  //       step = 0;
+  //     }
+
+  //     x += direction * stepSize;
+  //     const noise = (Math.random() - 0.5) * 0.2; // Ruído aleatório
+  //     const y = direction === 1 ? -(x * x) + noise + 4 : x * x + noise - 4;
+
+  //     setPoints(prev => [...prev, { x, y }]);
+  //     setLastData(`${x}\n${y}`);
+
+  //     step++;
+  //   }, 50);
+  // };
+
+  // const stopSimulation = () => {
+  //   if (intervalRef.current) {
+  //     clearInterval(intervalRef.current);
+  //     intervalRef.current = null;
+  //   }
+  // };
   // Managers Central Mode - Connecting to a device
   async function connectToDevice(device: Device) {
     try {
@@ -230,22 +277,70 @@ export default function Potentiostat() {
   async function sendMessageToDevice() {
     if (connectedDevice) {
       try {
+        setEstimatedTime(0);
+
+        // Criar variáveis temporárias corrigidas
+        const correctedMinVoltage = minVoltage.replace(",", ".");
+        const correctedMaxVoltage = maxVoltage.replace(",", ".");
+        const correctedStep = step.replace(",", "").replace(".", "");
+        const correctedDelay = delay.replace(",", "").replace(".", "");
+
+        // Atualizar o estado (mas não depender dele imediatamente)
+        setMinVoltage(correctedMinVoltage);
+        setMaxVoltage(correctedMaxVoltage);
+        setStep(correctedStep);
+        setDelay(correctedDelay);
+
+        console.log(correctedMinVoltage);
+        console.log(parseFloat(correctedMinVoltage));
+
+        // Verificações com os valores corrigidos
+        if (
+          correctedMinVoltage === "" ||
+          correctedMaxVoltage === "" ||
+          correctedStep === "" ||
+          correctedDelay === ""
+        ) return alert("Please fill all fields!");
+
+        if (parseFloat(correctedMinVoltage) < -2 || parseFloat(correctedMinVoltage) > 2)
+          return alert("Min Voltage must be between -2 and 2!");
+
+        if (parseFloat(correctedMaxVoltage) < -2 || parseFloat(correctedMaxVoltage) > 2)
+          return alert("Max Voltage must be between -2 and 2!");
+
+        if (parseFloat(correctedStep) < 50 || parseFloat(correctedStep) > 500)
+          return alert("Step must be between 50 and 500!");
+
+        if (parseFloat(correctedDelay) < 50 || parseFloat(correctedDelay) > 500)
+          return alert("Delay must be between 50 and 500 ms!");
+
+        if (parseFloat(correctedMinVoltage) >= parseFloat(correctedMaxVoltage))
+          return alert("Min Voltage must be less than Max Voltage!");
+
+        const estimatedTimeCalc = 2 * parseInt(correctedStep) * parseFloat(correctedDelay) / 1000;
+        setEstimatedTime(estimatedTimeCalc + 5);
+        // Criar mensagem e enviar
         const encodedMessage = Base64.encode(
-          `${minVoltage} ${maxVoltage} ${step} ${delay} 1`
+          `${correctedMinVoltage} ${correctedMaxVoltage} ${correctedStep} ${correctedDelay} 1`
         );
+        //startSimulation();
+        return;
         await connectedDevice.writeCharacteristicWithResponseForService(
           DATA_SERVICE_UUID,
           CHARACTERISTIC_UUID_Param,
           encodedMessage
         );
+
         console.log(
           "Message sent:",
-          `${minVoltage} ${maxVoltage} ${step} ${delay} 1`
+          `${correctedMinVoltage} ${correctedMaxVoltage} ${correctedStep} ${correctedDelay} 1`
         );
       } catch (error) {
+        setEstimatedTime(0);
         console.error("Failed to send message:", error);
       }
     } else {
+      setEstimatedTime(0);
       console.warn("No device connected!");
     }
   }
@@ -260,62 +355,90 @@ export default function Potentiostat() {
             </Button>
           </View>
         </View>
-        {connectedDevice && (
-          <>
-            <View style={styles.containerScreen2}>
-              <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.textInput2}
-                    placeholder="Min Voltage"
-                    value={minVoltage}
-                    onChangeText={setMinVoltage}
-                  />
-                  <TextInput
-                    style={styles.textInput2}
-                    placeholder="Max Voltage"
-                    value={maxVoltage}
-                    onChangeText={setMaxVoltage}
-                  />
-                </View>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.textInput2}
-                    placeholder="Step"
-                    value={step}
-                    onChangeText={setStep}
-                  />
-                  <TextInput
-                    style={styles.textInput2}
-                    placeholder="Delay"
-                    value={delay}
-                    onChangeText={setDelay}
-                  />
-                </View>
+        {/* {connectedDevice && ( 
+        <>*/}
+        <View>
+          <View style={styles.containerScreen2}>
+            <Text className="text-center mb-2 text-lg">Fill in all the parameters for measurement with the potentiostat. After this, simply click "Start Measurement."</Text>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.textInput2}
+                  placeholder="Min Voltage (>= -2 V)"
+                  value={minVoltage}
+                  onChangeText={setMinVoltage}
+                />
+                <TextInput
+                  style={styles.textInput2}
+                  placeholder="Max Voltage (<= 2 V)"
+                  value={maxVoltage}
+                  onChangeText={setMaxVoltage}
+                />
               </View>
-              <Text>{lastData}</Text>
-              {/* <GraphScreen experiments={points.length > 1 ? [{
-                id: 'Experimento Atual', name: 'Experimento Atual', graphData: {
-                  points
-                }
-              } as TExperiment] : []} actual={true} />   <GraphScreen actual={false} experiments={selectedExperiments.concat(meanExperiments)} />*/}
-              <View style={styles.buttonContainer}>
-                {points.length > 0 && (
-                  <Button mode="contained" onPress={() => setPoints([])}>
-                    Clear
-                  </Button>
-                )}
-                <Button mode="contained" onPress={sendMessageToDevice}>
-                  Start Measurement
-                </Button>
-                <Button mode="contained" onPress={handleShowModal}>
-                  Save
-                </Button>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.textInput2}
+                  placeholder="Step [50, 500]"
+                  value={step}
+                  onChangeText={setStep}
+                />
+                <TextInput
+                  style={styles.textInput2}
+                  placeholder="Delay [50 ms, 500 ms]"
+                  value={delay}
+                  onChangeText={setDelay}
+                />
               </View>
             </View>
-          </>
-        )}
-      </ScrollView>
+            {lastData !== "" && (
+              <>
+                <View className="items-center justify-center border-2 border-color1 mx-16 my-8 p-4 rounded-lg bg-color4">
+                  <Text className="text-purple-900 text-lg font-bold">Last Data Received</Text>
+
+                  {lastData.includes("\n") ? (
+                    <>
+                      <Text className="text-color2">
+                        Voltage: {parseFloat(lastData.split("\n")[0] || "0").toFixed(8)}V
+                      </Text>
+                      <Text className="text-color2">
+                        Current: {parseFloat(lastData.split("\n")[1] || "0").toFixed(8)}A
+                      </Text>
+                    </>
+                  ) : (
+                    <Text className="text-red-500 text-sm">Invalid data format</Text>
+                  )}
+                  {estimatedTime > 0 && (
+                    <>
+                      <Text> Estimated time remaining: {estimatedTime}s</Text>
+                    </>
+                  )}
+                </View>
+              </>
+            )}
+
+            <GraphScreen experiments={points.length > 1 ? [{
+              id: 'Experimento Atual', name: 'Experimento Atual', graphData: {
+                points
+              }
+            } as TExperiment] : []} actual={true} width_height={400} />
+            <View style={styles.buttonContainer}>
+              {points.length > 0 && (
+                <Button mode="contained" onPress={() => { setPoints([]); setEstimatedTime(0) }}>
+                  Clear
+                </Button>
+              )}
+              <Button mode="contained" onPress={sendMessageToDevice}>
+                Start Measurement
+              </Button>
+              <Button mode="contained" onPress={handleShowModal}>
+                Save
+              </Button>
+            </View>
+          </View>
+        </View>
+        {/* </>
+        )} */}
+      </ScrollView >
       <Modal
         visible={showModal}
         onDismiss={handleHideModal}

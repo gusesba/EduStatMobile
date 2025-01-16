@@ -8,7 +8,7 @@ export default function Main() {
   const handleLocalUse = async () => {
     await removeStore('user_token')
     await removeStore('user_id')
-    router.navigate('/experiments')
+    router.navigate('/potentiostat')
   }
 
   return (
@@ -21,6 +21,7 @@ export default function Main() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
