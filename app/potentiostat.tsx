@@ -362,136 +362,136 @@ export default function Potentiostat() {
             </Button>
           </View>
         </View>
-        {/* {connectedDevice && ( 
-        <>*/}
-        <View>
-          <View style={styles.containerScreen2}>
-            <Text className="text-center mb-2 text-lg">
-              Fill in all the parameters for measurement with the potentiostat.
-              After this, simply click "Start Measurement."
-            </Text>
-            <View style={styles.inputContainer}>
-              <View style={styles.inputWrapper}>
-                <View style={{ width: "50%" }}>
-                  <Text style={{ color: "gray" }}>
-                    {"Min Voltage (>= -2 V)"}
-                  </Text>
-                  <TextInput
-                    style={styles.textInput2}
-                    keyboardType="numeric"
-                    placeholder="Min Voltage"
-                    value={minVoltage}
-                    onChangeText={setMinVoltage}
-                  />
+        {connectedDevice && (
+          <>
+            <View>
+              <View style={styles.containerScreen2}>
+                <Text className="text-center mb-2 text-lg">
+                  Fill in all the parameters for measurement with the potentiostat.
+                  After this, simply click "Start Measurement."
+                </Text>
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <View style={{ width: "50%" }}>
+                      <Text style={{ color: "gray" }}>
+                        {"Min Voltage (>= -2 V)"}
+                      </Text>
+                      <TextInput
+                        style={styles.textInput2}
+                        keyboardType="numeric"
+                        placeholder="Min Voltage"
+                        value={minVoltage}
+                        onChangeText={setMinVoltage}
+                      />
+                    </View>
+                    <View style={{ width: "50%" }}>
+                      <Text style={{ color: "gray" }}>
+                        {"Max Voltage (<= 2 V)"}
+                      </Text>
+                      <TextInput
+                        style={styles.textInput2}
+                        placeholder="Max Voltage"
+                        keyboardType="numeric"
+                        value={maxVoltage}
+                        onChangeText={setMaxVoltage}
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.inputWrapper}>
+                    <View style={{ width: "50%" }}>
+                      <Text style={{ color: "gray" }}>Step [50, 500]</Text>
+                      <TextInput
+                        style={styles.textInput2}
+                        placeholder="Step"
+                        keyboardType="numeric"
+                        value={step}
+                        onChangeText={setStep}
+                      />
+                    </View>
+                    <View style={{ width: "50%" }}>
+                      <Text style={{ color: "gray" }}>Delay [50 ms, 500 ms]</Text>
+                      <TextInput
+                        style={styles.textInput2}
+                        placeholder="Delay"
+                        keyboardType="numeric"
+                        value={delay}
+                        onChangeText={setDelay}
+                      />
+                    </View>
+                  </View>
                 </View>
-                <View style={{ width: "50%" }}>
-                  <Text style={{ color: "gray" }}>
-                    {"Max Voltage (<= 2 V)"}
-                  </Text>
-                  <TextInput
-                    style={styles.textInput2}
-                    placeholder="Max Voltage"
-                    keyboardType="numeric"
-                    value={maxVoltage}
-                    onChangeText={setMaxVoltage}
-                  />
-                </View>
-              </View>
-              <View style={styles.inputWrapper}>
-                <View style={{ width: "50%" }}>
-                  <Text style={{ color: "gray" }}>Step [50, 500]</Text>
-                  <TextInput
-                    style={styles.textInput2}
-                    placeholder="Step"
-                    keyboardType="numeric"
-                    value={step}
-                    onChangeText={setStep}
-                  />
-                </View>
-                <View style={{ width: "50%" }}>
-                  <Text style={{ color: "gray" }}>Delay [50 ms, 500 ms]</Text>
-                  <TextInput
-                    style={styles.textInput2}
-                    placeholder="Delay"
-                    keyboardType="numeric"
-                    value={delay}
-                    onChangeText={setDelay}
-                  />
+                {lastData !== "" && (
+                  <>
+                    <View className="items-center justify-center border-2 border-color1 mx-16 my-8 p-4 rounded-lg bg-color4">
+                      <Text className="text-purple-900 text-lg font-bold">
+                        Last Data Received
+                      </Text>
+
+                      {lastData.includes("\n") ? (
+                        <>
+                          <Text className="text-color2">
+                            Voltage:{" "}
+                            {parseFloat(lastData.split("\n")[0] || "0").toFixed(8)}V
+                          </Text>
+                          <Text className="text-color2">
+                            Current:{" "}
+                            {parseFloat(lastData.split("\n")[1] || "0").toFixed(8)}A
+                          </Text>
+                        </>
+                      ) : (
+                        <Text className="text-red-500 text-sm">
+                          Invalid data format
+                        </Text>
+                      )}
+                      {estimatedTime > 0 && (
+                        <>
+                          <Text> Estimated time remaining: {estimatedTime}s</Text>
+                        </>
+                      )}
+                    </View>
+                  </>
+                )}
+
+                <GraphScreen
+                  experiments={
+                    points.length > 1
+                      ? [
+                        {
+                          id: "Experimento Atual",
+                          name: "Experimento Atual",
+                          graphData: {
+                            points,
+                          },
+                        } as TExperiment,
+                      ]
+                      : []
+                  }
+                  actual={true}
+                  width_height={400}
+                />
+                <View style={styles.buttonContainer}>
+                  {points.length > 0 && (
+                    <Button
+                      mode="contained"
+                      onPress={() => {
+                        setPoints([]);
+                        setEstimatedTime(0);
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                  <Button mode="contained" onPress={sendMessageToDevice}>
+                    Start Measurement
+                  </Button>
+                  <Button mode="contained" onPress={handleShowModal}>
+                    Save
+                  </Button>
                 </View>
               </View>
             </View>
-            {lastData !== "" && (
-              <>
-                <View className="items-center justify-center border-2 border-color1 mx-16 my-8 p-4 rounded-lg bg-color4">
-                  <Text className="text-purple-900 text-lg font-bold">
-                    Last Data Received
-                  </Text>
-
-                  {lastData.includes("\n") ? (
-                    <>
-                      <Text className="text-color2">
-                        Voltage:{" "}
-                        {parseFloat(lastData.split("\n")[0] || "0").toFixed(8)}V
-                      </Text>
-                      <Text className="text-color2">
-                        Current:{" "}
-                        {parseFloat(lastData.split("\n")[1] || "0").toFixed(8)}A
-                      </Text>
-                    </>
-                  ) : (
-                    <Text className="text-red-500 text-sm">
-                      Invalid data format
-                    </Text>
-                  )}
-                  {estimatedTime > 0 && (
-                    <>
-                      <Text> Estimated time remaining: {estimatedTime}s</Text>
-                    </>
-                  )}
-                </View>
-              </>
-            )}
-
-            <GraphScreen
-              experiments={
-                points.length > 1
-                  ? [
-                    {
-                      id: "Experimento Atual",
-                      name: "Experimento Atual",
-                      graphData: {
-                        points,
-                      },
-                    } as TExperiment,
-                  ]
-                  : []
-              }
-              actual={true}
-              width_height={400}
-            />
-            <View style={styles.buttonContainer}>
-              {points.length > 0 && (
-                <Button
-                  mode="contained"
-                  onPress={() => {
-                    setPoints([]);
-                    setEstimatedTime(0);
-                  }}
-                >
-                  Clear
-                </Button>
-              )}
-              <Button mode="contained" onPress={sendMessageToDevice}>
-                Start Measurement
-              </Button>
-              <Button mode="contained" onPress={handleShowModal}>
-                Save
-              </Button>
-            </View>
-          </View>
-        </View>
-        {/* </>
-        )} */}
+          </>
+        )}
       </ScrollView>
       <Modal
         visible={showModal}
