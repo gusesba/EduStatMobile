@@ -456,14 +456,14 @@ export default function Potentiostat() {
               experiments={
                 points.length > 1
                   ? [
-                      {
-                        id: "Experimento Atual",
-                        name: "Experimento Atual",
-                        graphData: {
-                          points,
-                        },
-                      } as TExperiment,
-                    ]
+                    {
+                      id: "Experimento Atual",
+                      name: "Experimento Atual",
+                      graphData: {
+                        points,
+                      },
+                    } as TExperiment,
+                  ]
                   : []
               }
               actual={true}

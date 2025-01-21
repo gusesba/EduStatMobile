@@ -1,7 +1,7 @@
 import { CartesianChart, Scatter, useChartTransformState } from "victory-native";
 import DropDownPicker from 'react-native-dropdown-picker'
-import { Image, StyleSheet, View } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { Image, StyleSheet, View, Animated, Easing } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Button,
   ButtonText,
@@ -13,6 +13,21 @@ import { Progress, ProgressFilledTrack } from '@/components/ui/progress';
 import { useFont } from "@shopify/react-native-skia";
 import data1 from '../assets/cyclic_voltammetry_measures/teste_antes.json';
 import data2 from '../assets/cyclic_voltammetry_measures/teste_depois.json';
+import Antes_caracterizacao_SPEAu_polido_H2SO4_1M from '../assets/cyclic_voltammetry_measures/Antes_caracterizacao_SPEAu_polido_H2SO4_1M.json';
+import Antes_caracterizacao_SPEAu_puro_H2SO4_1M from '../assets/cyclic_voltammetry_measures/Antes_caracterizacao_SPEAu_puro_H2SO4_1M.json';
+import Antes_caracterizacao_SPEAu_puro_HNO3_1M from '../assets/cyclic_voltammetry_measures/Antes_caracterizacao_SPEAu_puro_HNO3_1M.json';
+import Antes_caracterizacao_SPEAu_puro_NaOH_1M from '../assets/cyclic_voltammetry_measures/Antes_caracterizacao_SPEAu_puro_NaOH_1M.json';
+import Antes_caracterizacao_SPEC_PPi_H2SO4_1M from '../assets/cyclic_voltammetry_measures/Antes_caracterizacao_SPEC_PPi_H2SO4_1M.json';
+import Antes_caracterizacao_SPEC_PPi_HNO3_1M from '../assets/cyclic_voltammetry_measures/Antes_caracterizacao_SPEC_PPi_HNO3_1M.json';
+import Antes_caracterizacao_SPEC_PPi_NaOH_1M from '../assets/cyclic_voltammetry_measures/Antes_caracterizacao_SPEC_PPi_NaOH_1M.json';
+import Depois_caracterizacao_SPEAu_polido_H2SO4_1M from '../assets/cyclic_voltammetry_measures/Depois_caracterizacao_SPEAu_polido_H2SO4_1M.json';
+import Depois_caracterizacao_SPEAu_puro_H2SO4_1M from '../assets/cyclic_voltammetry_measures/Depois_caracterizacao_SPEAu_puro_H2SO4_1M.json';
+import Depois_caracterizacao_SPEAu_puro_HNO3_1M from '../assets/cyclic_voltammetry_measures/Depois_caracterizacao_SPEAu_puro_HNO3_1M.json';
+import Depois_caracterizacao_SPEAu_puro_NaOH_1M from '../assets/cyclic_voltammetry_measures/Depois_caracterizacao_SPEAu_puro_NaOH_1M.json';
+import Depois_caracterizacao_SPEC_PPi_H2SO4_1M from '../assets/cyclic_voltammetry_measures/Depois_caracterizacao_SPEC_PPi_H2SO4_1M.json';
+import Depois_caracterizacao_SPEC_PPi_HNO3_1M from '../assets/cyclic_voltammetry_measures/Depois_caracterizacao_SPEC_PPi_HNO3_1M.json';
+import Depois_caracterizacao_SPEC_PPi_NaOH_1M from '../assets/cyclic_voltammetry_measures/Depois_caracterizacao_SPEC_PPi_NaOH_1M.json';
+
 
 const electrodes_data = [
   {
@@ -37,75 +52,31 @@ const cleaning_methods_spec = [
     value: '1',
   },
   {
-    label: '0.5M H₂SO₄ + Pyrrole',
+    label: '1M HNO₃ + Pyrrole',
     value: '2',
   },
   {
-    label: '1M H₂SO₄',
+    label: '1M NaOH + Pyrrole',
     value: '3',
   },
-  {
-    label: '0.5M H₂SO₄',
-    value: '4',
-  },
-  {
-    label: '1M HNO₃ + Pyrrole',
-    value: '5',
-  },
-  {
-    label: '0.5M HNO₃ + Pyrrole',
-    value: '6',
-  },
-  {
-    label: '1M HNO₃',
-    value: '7',
-  },
-  {
-    label: '0.5M HNO₃',
-    value: '8',
-  },
-  {
-    label: '1M NaOH + Pyrrole',
-    value: '9',
-  },
-  {
-    label: '0.5M NaOH + Pyrrole',
-    value: '10',
-  },
-  {
-    label: '1M NaOH',
-    value: '11',
-  },
-  {
-    label: '0.5M NaOH',
-    value: '12',
-  }
 ];
 const cleaning_methods_speau = [
   {
     label: '1M H₂SO₄',
-    value: '13',
+    value: '4',
   },
   {
-    label: '0.5M H₂SO₄',
-    value: '14',
+    label: '1M H₂SO₄ Polished',
+    value: '5',
   },
   {
     label: '1M HNO₃',
-    value: '15',
-  },
-  {
-    label: '0.5M HNO₃',
-    value: '16',
+    value: '6',
   },
   {
     label: '1M NaOH',
-    value: '17',
+    value: '7',
   },
-  {
-    label: '0.5M NaOH',
-    value: '18',
-  }
 ];
 
 type Data = {
@@ -149,26 +120,77 @@ export default function Simulation() {
   const [DATA2, setData2] = useState<Data[]>([]);
   const transformState = useChartTransformState();
   const [finished, setFinished] = useState(false);
-  useEffect(() => {
-    if (data1.length > 0 && data2.length > 0) {
-      console.log("Data loaded");
 
 
-      // Converte os valores de string para number
-      const convertedData = data1.map(item => ({
-        voltage: parseFloat(item.voltage), // Converte de string para número
-        current: parseFloat(item.current)  // Converte de string para número
+  const translateY = useRef(new Animated.Value(0)).current;
+
+  const cleaningValuesToData = () => {
+    const cleaningMethodsValueCorrect = cleaningMethodsValue || '1';
+    const cleaningDataMap = {
+      '1': Antes_caracterizacao_SPEC_PPi_H2SO4_1M,
+      '2': Antes_caracterizacao_SPEC_PPi_HNO3_1M,
+      '3': Antes_caracterizacao_SPEC_PPi_NaOH_1M,
+      '4': Antes_caracterizacao_SPEAu_puro_H2SO4_1M,
+      '5': Antes_caracterizacao_SPEAu_polido_H2SO4_1M,
+      '6': Antes_caracterizacao_SPEAu_puro_HNO3_1M,
+      '7': Antes_caracterizacao_SPEAu_puro_NaOH_1M,
+    };
+
+    const depoisDataMap = {
+      '1': Depois_caracterizacao_SPEC_PPi_H2SO4_1M,
+      '2': Depois_caracterizacao_SPEC_PPi_HNO3_1M,
+      '3': Depois_caracterizacao_SPEC_PPi_NaOH_1M,
+      '4': Depois_caracterizacao_SPEAu_puro_H2SO4_1M,
+      '5': Depois_caracterizacao_SPEAu_polido_H2SO4_1M,
+      '6': Depois_caracterizacao_SPEAu_puro_HNO3_1M,
+      '7': Depois_caracterizacao_SPEAu_puro_NaOH_1M,
+    };
+
+    const antesData = cleaningDataMap[cleaningMethodsValueCorrect];
+    const depoisData = depoisDataMap[cleaningMethodsValueCorrect];
+
+    if (antesData && depoisData) {
+      const convertedData = antesData.map(item => ({
+        voltage: parseFloat(item.voltage),
+        current: parseFloat(item.current),
       }));
+      setData(convertedData);
 
-
-      setData(convertedData); // Atualiza o estado com os dados convertidos
-      const convertedData2 = data2.map(item => ({
-        voltage: parseFloat(item.voltage), // Converte de string para número
-        current: parseFloat(item.current)  // Converte de string para número
+      const convertedData2 = depoisData.map(item => ({
+        voltage: parseFloat(item.voltage),
+        current: parseFloat(item.current),
       }));
-      setData2(convertedData2); // Atualiza o estado com os dados convertidos
+      setData2(convertedData2);
+    } else {
+      console.error('Error converting cleaning values to data');
     }
-  }, [data1]);
+  };
+
+  useEffect(() => {
+    if (cleaningState === 2) {
+      translateY.setValue(0); // Reseta a animação
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(translateY, {
+            toValue: 10,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateY, {
+            toValue: -10,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [cleaningState]);
+
+
+
   //A cada o.5 segundos, atualiza o gráfico com um valor a mais de DATA
   useEffect(() => {
     if (cleaningState !== 1) return;
@@ -219,7 +241,7 @@ export default function Simulation() {
       const timeout = setTimeout(() => {
         // Após o tempo de espera, muda o estado para 4
         setLoading(loading + 4);
-      }, 50); // Espera 5 segundos (5000 milissegundos)
+      }, 100); // Espera 5 segundos (5000 milissegundos)
       if (loading >= 100) {
         setCleaningState(3);
       }
@@ -248,7 +270,7 @@ export default function Simulation() {
   }
   if (cleaningState === 0) {
     return (
-      <View className="items-center flex-1 justify-center gap-10 ml-8 mr-8">
+      <View className="items-center flex-1 justify-center gap-10 ml-8 mr-8 mb-16">
         <Heading size="2xl" >Cleaning Simulator Screen</Heading>
         <Text size="lg" >On this screen, you can perform cyclic voltammetry using the selected (dirty) electrode. Afterward, choose a cleaning method, apply it, and observe how the measurements improve.</Text>
         <View className="z-20">
@@ -283,6 +305,7 @@ export default function Simulation() {
           if (cleaningMethodsValue === null) {
             alert("Please select a cleaning method");
           } else {
+            cleaningValuesToData();
             setCleaningState(1)
           }
         }
@@ -308,9 +331,9 @@ export default function Simulation() {
             <Heading size="2xl">Cyclic Voltammetry Completed</Heading>
           )}
         </View>
-        <Text size="lg" className="text-center ml-10">Current (A) x Potential Applied (V)</Text>
         {DATA.length !== visibleFirstData.length && (
           <View className="h-2/3 justify-center mb-10">
+            <Text size="lg" className="text-center ml-10">Current (A) x Potential Applied (V)</Text>
             <CartesianChart data={visibleFirstData} xKey="voltage" yKeys={["current"]}  >
               {/* 👇 render function exposes various data, such as points. */}
               {({ points }) => (
@@ -323,7 +346,9 @@ export default function Simulation() {
           </View>
         )}
         {DATA.length === visibleFirstData.length && (
-          <View className="h-2/3 justify-center mb-10">
+          <View className="h-2/3 justify-center mb-10 relative">
+            <Text className="absolute top-0 left-0 text-lg font-bold">Current (A)</Text>
+
             <CartesianChart data={visibleFirstData} xKey="voltage" yKeys={["current"]} axisOptions={{ font }} transformState={transformState.state}>
               {/* <CartesianChart data={visibleFirstData} xKey="voltage" yKeys={["current"]} transformState={transformState.state}> */}
 
@@ -335,6 +360,8 @@ export default function Simulation() {
                 </>
               )}
             </CartesianChart>
+            <Text className="absolute bottom-0 right-0 text-lg font-bold">U (V)</Text>
+
           </View>
         )
         }
@@ -354,12 +381,19 @@ export default function Simulation() {
   } else if (cleaningState === 2) {
     return (
       <View className="flex-1 justify-center mb-10 mt-10 items-center gap-20 mr-6 ml-6">
+        <Animated.Image
+          source={require('../assets/images/celula_eletroquimica.png')}
+          style={{ width: 120, height: 100, transform: [{ translateY }] }}
+        />
         <Heading size="lg">Cleaning the {electrodes}</Heading>
         <Text size="lg">Please wait... </Text>
-        <Progress value={loading} className='w-80 h-1'>
-          <ProgressFilledTrack className='h-1' />
+        <Progress value={loading} className="w-80 h-1">
+          <ProgressFilledTrack className="h-1" />
         </Progress>
-
+        <Animated.Image
+          source={require('../assets/images/app_experiments.png')}
+          style={{ width: 75, height: 150, transform: [{ translateY }] }}
+        />
       </View>
     );
   } else if (cleaningState === 3) {
@@ -368,10 +402,10 @@ export default function Simulation() {
         <View className="flex-1 justify-center mb-10 mt-10 items-center gap-20">
           <Heading size="2xl">Compare After Cleaning</Heading>
         </View>
-        <Text size="lg" className="text-center ml-10">Current (A) x Potential Applied (V)</Text>
-
+        {/* <Text size="lg" className="text-center ml-10">Current (A) x Potential Applied (V)</Text> */}
         {finished && (
-          <View className="h-2/3 justify-center mb-10">
+          <View className="h-2/3 justify-center mb-10 relative">
+            <Text className="absolute top-0 left-0 text-lg font-bold">Current (A)</Text>
             <CartesianChart data={visibleSecondData} xKey="voltage" yKeys={["current", "current2"]} axisOptions={{ font }} transformState={transformState.state}>
               {/* <CartesianChart data={visibleSecondData} xKey="voltage" yKeys={["current", "current2"]} transformState={transformState.state}> */}
 
@@ -385,10 +419,13 @@ export default function Simulation() {
                 </>
               )}
             </CartesianChart>
+            <Text className="absolute bottom-0 right-0 text-lg font-bold">U (V)</Text>
           </View>
         )}
         {!finished && (
           <View className="h-2/3 justify-center mb-10">
+            <Text size="lg" className="text-center ml-10">Current (A) x Potential Applied (V)</Text>
+
             <CartesianChart data={visibleSecondData} xKey="voltage" yKeys={["current", "current2"]} >
               {/* 👇 render function exposes various data, such as points. */}
               {({ points }) => (
