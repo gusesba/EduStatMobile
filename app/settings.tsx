@@ -19,7 +19,8 @@ export default function Settings() {
   const [teamsExp, setTeamsExp] = useState(0);
 
   useEffect(() => {
-    handleSetUser();
+    if(userLogged)
+      handleSetUser();
   }, [userLogged]);
 
   useEffect(() => {
@@ -49,7 +50,8 @@ export default function Settings() {
   }, [userLogged, isFocused]);
 
   useEffect(() => {
-    setTeamsExp(teams.length);
+    if(userLogged)
+      setTeamsExp(teams.length);
   }, [teams]);
 
   if (!userLogged) return <NotLogged />;

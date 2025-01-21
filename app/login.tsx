@@ -22,7 +22,7 @@ export default function Login() {
     const status = await login(text, password);
 
     if (status == 201) {
-      router.navigate("/experiments");
+      router.navigate("/simulation");
     } else if (status == 400) {
       alert("User or Password invalid!");
     } else {

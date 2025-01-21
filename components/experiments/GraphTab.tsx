@@ -111,7 +111,7 @@ export default function GraphTab({ selectedExperiments }: GraphTabProps) {
   }, [selectedExperiments]);
 
   return (
-    <View className="m-16">
+    <View>
       {noise ? (
         <GraphScreen
           width_height={width * 0.9}
@@ -127,15 +127,19 @@ export default function GraphTab({ selectedExperiments }: GraphTabProps) {
       )}
       {selectedExperiments.filter((exp) => exp.graphData != null).length >
         0 && (
-        <>
-          <Button onPress={handleCalculateMean}>Mean</Button>
-          <Button onPress={() => setNoise((noise) => !noise)}>
-            {noise ? "Remove Noise" : "Add Noise"}
+        <View style={styles.buttons}>
+          <Button mode="elevated" onPress={handleCalculateMean}>
+            Mean of the graphs
           </Button>
-        </>
+          <Button mode="contained" onPress={() => setNoise((noise) => !noise)}>
+            {noise ? "Add Noise" : "Remove Noise"}
+          </Button>
+        </View>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  buttons: { flexDirection: "row", gap: 5, marginTop: 10, margin: "auto" },
+});

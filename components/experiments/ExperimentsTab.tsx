@@ -6,6 +6,7 @@ import { getTeams } from "@/app/libs/teams";
 import { TExperiment } from "@/types/experiments";
 import ExperimentsGroup from "./experiments/ExperimentsGroup";
 import NotesModal from "./experiments/NotesModal";
+import { isUserLogged } from "@/app/libs/login";
 
 interface ExperimentsTabProps {
   selectedExperiments: TExperiment[];
@@ -33,12 +34,19 @@ export default function ExperimentsTab({
   );
 
   const handleGetExperiments = async () => {
-    const [userExp, statusUserExp] = await getUserExperiments();
-    const localExp = await readEdsJsonFiles();
-    const [teamsExp, statusTeamsExp] = await getTeams();
+    const user = await isUserLogged()
     const exp = defaultExp;
-    if (statusUserExp == 200) exp.user = userExp;
-    if (statusTeamsExp == 200) exp.team = teamsExp;
+    if(user){
+      const [userExp, statusUserExp] = await getUserExperiments();
+      const [teamsExp, statusTeamsExp] = await getTeams();
+      if (statusUserExp == 200) exp.user = userExp;
+      if (statusTeamsExp == 200) exp.team = teamsExp;
+    }
+    else{
+      exp.user = []
+      exp.team = []
+    }
+    const localExp = await readEdsJsonFiles();
     exp.local = localExp;
 
     setEexperiments(exp);
@@ -78,7 +86,7 @@ export default function ExperimentsTab({
             handleOpenNotes={handleOpenNotes}
             selectedExperiments={selectedExperiments}
             setSelectedExperiments={setSelectedExperiments}
-            title="Teams' Notes"
+            title="Teams' Experiments"
             type="team"
           />
         </ScrollView>

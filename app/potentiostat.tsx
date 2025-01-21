@@ -10,7 +10,7 @@ import {
 import { Base64 } from "js-base64";
 import { Button, Modal, TextInput } from "react-native-paper";
 import { GraphScreen } from "@/components/graphComponent";
-import { TExperiment } from "./experiments";
+import { TExperiment } from "@/types/experiments";
 import { ScrollView } from "react-native-gesture-handler";
 import {
   createTeamExperiment,
@@ -300,12 +300,19 @@ export default function Potentiostat() {
           correctedMaxVoltage === "" ||
           correctedStep === "" ||
           correctedDelay === ""
-        ) return alert("Please fill all fields!");
+        )
+          return alert("Please fill all fields!");
 
-        if (parseFloat(correctedMinVoltage) < -2 || parseFloat(correctedMinVoltage) > 2)
+        if (
+          parseFloat(correctedMinVoltage) < -2 ||
+          parseFloat(correctedMinVoltage) > 2
+        )
           return alert("Min Voltage must be between -2 and 2!");
 
-        if (parseFloat(correctedMaxVoltage) < -2 || parseFloat(correctedMaxVoltage) > 2)
+        if (
+          parseFloat(correctedMaxVoltage) < -2 ||
+          parseFloat(correctedMaxVoltage) > 2
+        )
           return alert("Max Voltage must be between -2 and 2!");
 
         if (parseFloat(correctedStep) < 50 || parseFloat(correctedStep) > 500)
@@ -317,14 +324,14 @@ export default function Potentiostat() {
         if (parseFloat(correctedMinVoltage) >= parseFloat(correctedMaxVoltage))
           return alert("Min Voltage must be less than Max Voltage!");
 
-        const estimatedTimeCalc = 2 * parseInt(correctedStep) * parseFloat(correctedDelay) / 1000;
+        const estimatedTimeCalc =
+          (2 * parseInt(correctedStep) * parseFloat(correctedDelay)) / 1000;
         setEstimatedTime(estimatedTimeCalc + 5);
         // Criar mensagem e enviar
         const encodedMessage = Base64.encode(
           `${correctedMinVoltage} ${correctedMaxVoltage} ${correctedStep} ${correctedDelay} 1`
         );
         //startSimulation();
-        return;
         await connectedDevice.writeCharacteristicWithResponseForService(
           DATA_SERVICE_UUID,
           CHARACTERISTIC_UUID_Param,
@@ -359,53 +366,82 @@ export default function Potentiostat() {
         <>*/}
         <View>
           <View style={styles.containerScreen2}>
-            <Text className="text-center mb-2 text-lg">Fill in all the parameters for measurement with the potentiostat. After this, simply click "Start Measurement."</Text>
+            <Text className="text-center mb-2 text-lg">
+              Fill in all the parameters for measurement with the potentiostat.
+              After this, simply click "Start Measurement."
+            </Text>
             <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.textInput2}
-                  placeholder="Min Voltage (>= -2 V)"
-                  value={minVoltage}
-                  onChangeText={setMinVoltage}
-                />
-                <TextInput
-                  style={styles.textInput2}
-                  placeholder="Max Voltage (<= 2 V)"
-                  value={maxVoltage}
-                  onChangeText={setMaxVoltage}
-                />
+                <View style={{ width: "50%" }}>
+                  <Text style={{ color: "gray" }}>
+                    {"Min Voltage (>= -2 V)"}
+                  </Text>
+                  <TextInput
+                    style={styles.textInput2}
+                    keyboardType="numeric"
+                    placeholder="Min Voltage"
+                    value={minVoltage}
+                    onChangeText={setMinVoltage}
+                  />
+                </View>
+                <View style={{ width: "50%" }}>
+                  <Text style={{ color: "gray" }}>
+                    {"Max Voltage (<= 2 V)"}
+                  </Text>
+                  <TextInput
+                    style={styles.textInput2}
+                    placeholder="Max Voltage"
+                    keyboardType="numeric"
+                    value={maxVoltage}
+                    onChangeText={setMaxVoltage}
+                  />
+                </View>
               </View>
               <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.textInput2}
-                  placeholder="Step [50, 500]"
-                  value={step}
-                  onChangeText={setStep}
-                />
-                <TextInput
-                  style={styles.textInput2}
-                  placeholder="Delay [50 ms, 500 ms]"
-                  value={delay}
-                  onChangeText={setDelay}
-                />
+                <View style={{ width: "50%" }}>
+                  <Text style={{ color: "gray" }}>Step [50, 500]</Text>
+                  <TextInput
+                    style={styles.textInput2}
+                    placeholder="Step"
+                    keyboardType="numeric"
+                    value={step}
+                    onChangeText={setStep}
+                  />
+                </View>
+                <View style={{ width: "50%" }}>
+                  <Text style={{ color: "gray" }}>Delay [50 ms, 500 ms]</Text>
+                  <TextInput
+                    style={styles.textInput2}
+                    placeholder="Delay"
+                    keyboardType="numeric"
+                    value={delay}
+                    onChangeText={setDelay}
+                  />
+                </View>
               </View>
             </View>
             {lastData !== "" && (
               <>
                 <View className="items-center justify-center border-2 border-color1 mx-16 my-8 p-4 rounded-lg bg-color4">
-                  <Text className="text-purple-900 text-lg font-bold">Last Data Received</Text>
+                  <Text className="text-purple-900 text-lg font-bold">
+                    Last Data Received
+                  </Text>
 
                   {lastData.includes("\n") ? (
                     <>
                       <Text className="text-color2">
-                        Voltage: {parseFloat(lastData.split("\n")[0] || "0").toFixed(8)}V
+                        Voltage:{" "}
+                        {parseFloat(lastData.split("\n")[0] || "0").toFixed(8)}V
                       </Text>
                       <Text className="text-color2">
-                        Current: {parseFloat(lastData.split("\n")[1] || "0").toFixed(8)}A
+                        Current:{" "}
+                        {parseFloat(lastData.split("\n")[1] || "0").toFixed(8)}A
                       </Text>
                     </>
                   ) : (
-                    <Text className="text-red-500 text-sm">Invalid data format</Text>
+                    <Text className="text-red-500 text-sm">
+                      Invalid data format
+                    </Text>
                   )}
                   {estimatedTime > 0 && (
                     <>
@@ -416,14 +452,32 @@ export default function Potentiostat() {
               </>
             )}
 
-            <GraphScreen experiments={points.length > 1 ? [{
-              id: 'Experimento Atual', name: 'Experimento Atual', graphData: {
-                points
+            <GraphScreen
+              experiments={
+                points.length > 1
+                  ? [
+                      {
+                        id: "Experimento Atual",
+                        name: "Experimento Atual",
+                        graphData: {
+                          points,
+                        },
+                      } as TExperiment,
+                    ]
+                  : []
               }
-            } as TExperiment] : []} actual={true} width_height={400} />
+              actual={true}
+              width_height={400}
+            />
             <View style={styles.buttonContainer}>
               {points.length > 0 && (
-                <Button mode="contained" onPress={() => { setPoints([]); setEstimatedTime(0) }}>
+                <Button
+                  mode="contained"
+                  onPress={() => {
+                    setPoints([]);
+                    setEstimatedTime(0);
+                  }}
+                >
                   Clear
                 </Button>
               )}
@@ -438,7 +492,7 @@ export default function Potentiostat() {
         </View>
         {/* </>
         )} */}
-      </ScrollView >
+      </ScrollView>
       <Modal
         visible={showModal}
         onDismiss={handleHideModal}

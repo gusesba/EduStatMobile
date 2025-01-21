@@ -44,7 +44,7 @@ export default function ExperimentsGroup({
               style={isSelected ? styles.teamNameSelected : styles.teamName}
             >
               <TouchableOpacity
-                style={{ padding: 15 }}
+                style={{ padding: 15, width: "70%" }}
                 onPress={() =>
                   setSelectedExperiments((current) =>
                     isSelected
@@ -85,17 +85,23 @@ const styles = StyleSheet.create({
   },
   teamNameSelected: {
     backgroundColor: "#ddd",
-    width: "100%",
+    width: "90%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    margin: "auto",
+    borderRadius: 10,
+    marginBottom: 3,
   },
   teamName: {
     backgroundColor: "#eee",
-    width: "100%",
+    width: "90%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    margin: "auto",
+    borderRadius: 10,
+    marginBottom: 3,
   },
   btns: {
     flexDirection: "row",
