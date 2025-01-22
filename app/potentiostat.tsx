@@ -37,6 +37,9 @@ export default function Potentiostat() {
   const [maxVoltage, setMaxVoltage] = useState<string>("");
   const [step, setStep] = useState<string>("");
   const [delay, setDelay] = useState<string>("");
+  const [finalVoltage, setFinalVoltage] = useState<string>("");
+  const [timeIV, setTimeIV] = useState<string>("");
+  const [cyclesNumber, setCyclesNumber] = useState<string>("");
   const [points, setPoints] = useState<{ x: number; y: number }[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [experimentName, setExperimentName] = useState("");
@@ -282,24 +285,30 @@ export default function Potentiostat() {
         // Criar variáveis temporárias corrigidas
         const correctedMinVoltage = minVoltage.replace(",", ".");
         const correctedMaxVoltage = maxVoltage.replace(",", ".");
-        const correctedStep = step.replace(",", "").replace(".", "");
-        const correctedDelay = delay.replace(",", "").replace(".", "");
+        const correctedStep = step.split(",")[0].split(".")[0];
+        const correctedDelay = delay.split(",")[0].split(".")[0];
+        const correctedTimeIV = timeIV.split(",")[0].split(".")[0];
+        const correctedFinalVoltage = finalVoltage.replace(",", ".");
+        const correctedCycles = cyclesNumber.split(",")[0].split(".")[0];
 
         // Atualizar o estado (mas não depender dele imediatamente)
         setMinVoltage(correctedMinVoltage);
         setMaxVoltage(correctedMaxVoltage);
         setStep(correctedStep);
         setDelay(correctedDelay);
-
-        console.log(correctedMinVoltage);
-        console.log(parseFloat(correctedMinVoltage));
+        setTimeIV(correctedTimeIV);
+        setFinalVoltage(correctedFinalVoltage);
+        setCyclesNumber(correctedCycles);
 
         // Verificações com os valores corrigidos
         if (
           correctedMinVoltage === "" ||
           correctedMaxVoltage === "" ||
           correctedStep === "" ||
-          correctedDelay === ""
+          correctedDelay === "" ||
+          correctedFinalVoltage === "" ||
+          correctedCycles === "" ||
+          correctedTimeIV === ""
         )
           return alert("Please fill all fields!");
 
@@ -329,7 +338,7 @@ export default function Potentiostat() {
         setEstimatedTime(estimatedTimeCalc + 5);
         // Criar mensagem e enviar
         const encodedMessage = Base64.encode(
-          `${correctedMinVoltage} ${correctedMaxVoltage} ${correctedStep} ${correctedDelay} 1`
+          `${correctedMinVoltage} ${correctedMaxVoltage} ${correctedStep} ${correctedDelay} ${correctedCycles} ${correctedTimeIV} ${correctedFinalVoltage} 1`
         );
         //startSimulation();
         await connectedDevice.writeCharacteristicWithResponseForService(
@@ -416,6 +425,42 @@ export default function Potentiostat() {
                         keyboardType="numeric"
                         value={delay}
                         onChangeText={setDelay}
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.inputWrapper}>
+                    <View style={{ width: "50%" }}>
+                      <Text style={{ color: "gray" }}>
+                        Time to keep initial voltage (ms)
+                      </Text>
+                      <TextInput
+                        style={styles.textInput2}
+                        placeholder="Initial voltage time"
+                        keyboardType="numeric"
+                        value={timeIV}
+                        onChangeText={setTimeIV}
+                      />
+                    </View>
+                    <View style={{ width: "50%" }}>
+                      <Text style={{ color: "gray" }}>Final Voltage (V)</Text>
+                      <TextInput
+                        style={styles.textInput2}
+                        placeholder="Final Voltage"
+                        keyboardType="numeric"
+                        value={finalVoltage}
+                        onChangeText={setFinalVoltage}
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.inputWrapper}>
+                    <View style={{ width: "104%" }}>
+                      <Text style={{ color: "gray" }}>Number of Cycles</Text>
+                      <TextInput
+                        style={styles.textInput2}
+                        placeholder="Cycles"
+                        keyboardType="numeric"
+                        value={cyclesNumber}
+                        onChangeText={setCyclesNumber}
                       />
                     </View>
                   </View>
