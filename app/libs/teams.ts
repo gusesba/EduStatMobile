@@ -17,7 +17,7 @@ export const createTeam = async (name: string) => {
             },
             data: {
                 name
-            }
+            },
         });
         return response.status;
     } catch (error: any) {
@@ -61,7 +61,7 @@ export const getUsers = async (teamId:string) => {
             },
             data: {
                 teamId
-            }
+            },
         })
         return [response.data,response.status]
     }
@@ -109,7 +109,7 @@ export const sendInvite = async (email:string,role:string,teamId:string) => {
                 email,
                 teamId,
                 role
-            }
+            },
         })
         return [response.data,response.status]
     }
@@ -137,7 +137,7 @@ export const acceptInvite = async (inviteId: string) => {
             },
             data:{
                 inviteId
-            }
+            },
         })
         return [response.data,response.status]
     }

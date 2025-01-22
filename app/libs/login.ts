@@ -2,7 +2,6 @@ import axios from 'axios';
 import {baseUrl} from './config'
 
 import { getValueForStore, saveStore } from './secureStore';
-
 export const login = async (email:string,password:string) => {
     try{
       const response = await axios({
@@ -11,7 +10,7 @@ export const login = async (email:string,password:string) => {
       data: {
         email,
         password
-      }
+      },
     });
     if(response.status == 201)
     {
@@ -64,7 +63,7 @@ export const profile = async () => {
           url: baseUrl + '/me',
           headers: {
               Authorization: `Bearer ${user_token}` // Adiciona o token no cabeçalho
-          }
+          },
       })
       console.log(response.data.user)
       return [response.data.user,response.status]

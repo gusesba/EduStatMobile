@@ -6,7 +6,6 @@ import { login } from "./libs/login";
 import { removeStore } from "./libs/secureStore";
 import { baseUrl } from "./libs/config";
 import { useIsFocused } from "@react-navigation/native";
-
 export default function Login() {
   const [text, setText] = useState("");
   const [password, setPassword] = useState("");

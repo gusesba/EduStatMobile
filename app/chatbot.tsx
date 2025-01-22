@@ -71,6 +71,7 @@ export default function Chatbot() {
       const response = await axios.post(
         url,
         { message },
+
       );
 
       setMessages([...messages, { role: 'user', content: message }, { role: 'bot', content: response.data.content }]);
