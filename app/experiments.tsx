@@ -20,15 +20,9 @@ export default function Experiment() {
     { key: "notes", title: "Notes", icon: "account-group" },
     { key: "graph", title: "Graph", icon: "account-group" },
   ]);
-
-  const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
   const isFocused = useIsFocused();
 
   useEffect(() => {
-    //setExperiments([])
-    isUserLogged().then((a) => {
-      setUserLogged(a);
-    });
     setIndex(0);
     setSelectedExperiments([]);
   }, [isFocused]);

@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { getUserExperiments, readEdsJsonFiles } from "@/app/libs/experiments";
+import {
+  getTeamExperiments,
+  getUserExperiments,
+  readEdsJsonFiles,
+} from "@/app/libs/experiments";
 import { ScrollView } from "react-native-gesture-handler";
 import { getTeams } from "@/app/libs/teams";
 import { TExperiment } from "@/types/experiments";
 import ExperimentsGroup from "./experiments/ExperimentsGroup";
 import NotesModal from "./experiments/NotesModal";
 import { isUserLogged } from "@/app/libs/login";
+import { useIsFocused } from "@react-navigation/native";
 
 interface ExperimentsTabProps {
   selectedExperiments: TExperiment[];
@@ -23,7 +28,7 @@ export default function ExperimentsTab({
   selectedExperiments,
   setSelectedExperiments,
 }: ExperimentsTabProps) {
-  const [eexperiments, setEexperiments] = useState<{
+  const [experiments, setExperiments] = useState<{
     user: TExperiment[];
     local: TExperiment[];
     team: TExperiment[];
@@ -32,24 +37,32 @@ export default function ExperimentsTab({
   const [noteExperiment, setNoteExperiment] = useState<TExperiment | null>(
     null
   );
+  const isFocused = useIsFocused();
 
   const handleGetExperiments = async () => {
-    const user = await isUserLogged()
+    console.log("Get experiments");
+    const user = await isUserLogged();
+    console.log(user);
     const exp = defaultExp;
-    if(user){
+    if (user) {
       const [userExp, statusUserExp] = await getUserExperiments();
-      const [teamsExp, statusTeamsExp] = await getTeams();
+      const [teams, statusTeamsExp] = (await getTeams()) as [
+        [{ id: string }],
+        number
+      ];
+      for (var team of teams) {
+        exp.team.concat(await getTeamExperiments(team.id));
+      }
       if (statusUserExp == 200) exp.user = userExp;
-      if (statusTeamsExp == 200) exp.team = teamsExp;
-    }
-    else{
-      exp.user = []
-      exp.team = []
+    } else {
+      exp.user = [];
+      exp.team = [];
     }
     const localExp = await readEdsJsonFiles();
     exp.local = localExp;
+    console.log(exp);
 
-    setEexperiments(exp);
+    setExperiments(exp);
   };
 
   const handleOpenNotes = (experiment: TExperiment) => {
@@ -58,15 +71,16 @@ export default function ExperimentsTab({
   };
 
   useEffect(() => {
-    handleGetExperiments();
-  }, []);
+    console.log(isFocused);
+    if (isFocused) handleGetExperiments();
+  }, [isFocused]);
 
   return (
     <>
       <View style={styles.tabTeamContent}>
         <ScrollView>
           <ExperimentsGroup
-            experiments={eexperiments.local}
+            experiments={experiments.local}
             handleOpenNotes={handleOpenNotes}
             selectedExperiments={selectedExperiments}
             setSelectedExperiments={setSelectedExperiments}
@@ -74,7 +88,7 @@ export default function ExperimentsTab({
             type="local"
           />
           <ExperimentsGroup
-            experiments={eexperiments.user}
+            experiments={experiments.user}
             handleOpenNotes={handleOpenNotes}
             selectedExperiments={selectedExperiments}
             setSelectedExperiments={setSelectedExperiments}
@@ -82,7 +96,7 @@ export default function ExperimentsTab({
             type="user"
           />
           <ExperimentsGroup
-            experiments={eexperiments.team}
+            experiments={experiments.team}
             handleOpenNotes={handleOpenNotes}
             selectedExperiments={selectedExperiments}
             setSelectedExperiments={setSelectedExperiments}
