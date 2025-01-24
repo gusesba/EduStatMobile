@@ -2,7 +2,7 @@ import axios from "axios";
 import { baseUrl } from "./config";
 import { getValueForStore } from "./secureStore";
 import * as FileSystem from "expo-file-system";
-import { TExperiment } from "../experiments";
+import { TExperiment } from "@/types/experiments"
 
 export const getUserExperiments = async () => {
   const user_token = await getValueForStore("user_token");
@@ -44,6 +44,7 @@ export const getTeamExperiments = async (teamId: string) => {
         teamId,
       },
     });
+    console.log(teamId)
     return [response.data, response.status];
   } catch (error: any) {
     console.log(error);
@@ -243,7 +244,6 @@ export const createTeamExperiment = async (name: string, teamId: string) => {
     });
     return [response.data, response.status];
   } catch (error: any) {
-    console.log(error);
     return [error, error.response?.status || 500]; // Retorna 500 como fallback se `response` não existir
   }
 };
@@ -252,7 +252,6 @@ export const saveTeamExperiment = async (
   experiment: TExperiment,
   teamId: string
 ) => {
-  console.log(experiment);
   const user_token = await getValueForStore("user_token");
   if (!user_token) {
     alert("User must be signed in!");

@@ -49,7 +49,8 @@ export default function ExperimentsTab({
         number
       ];
       for (var team of teams) {
-        exp.team.concat(await getTeamExperiments(team.id));
+        const [teamExp, _] = await getTeamExperiments(team.id);
+        exp.team = exp.team.concat(teamExp);
       }
       if (statusUserExp == 200) exp.user = userExp;
     } else {
