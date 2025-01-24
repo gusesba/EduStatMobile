@@ -1,5 +1,5 @@
 import { GraphScreen } from "@/components/graphComponent";
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { BottomNavigation, Button, Text } from "react-native-paper";
@@ -27,29 +27,69 @@ export default function Experiment() {
     setSelectedExperiments([]);
   }, [isFocused]);
 
-  const renderScene = BottomNavigation.SceneMap({
-    experiments: () => (
-      <ExperimentsTab
-        selectedExperiments={selectedExperiments}
-        setSelectedExperiments={setSelectedExperiments}
+  const handleSetSelectedExperiments = useCallback(
+    (experiment: TExperiment, selected: boolean) => {
+      setSelectedExperiments((prevSelectedExperiments) => {
+        if (selected) {
+          return [...prevSelectedExperiments, experiment];
+        }
+        return prevSelectedExperiments.filter(
+          (item) => item.id != experiment.id
+        );
+      });
+    },
+    []
+  );
+
+  const MemoizedExperimentsTab = memo(
+    ExperimentsTab,
+    (prevProps, nextProps) => {
+      // Verifica se setSelectedExperiments mudou ou se há qualquer outra prop que exija re-renderização
+      return (
+        prevProps.setSelectedExperiments === nextProps.setSelectedExperiments
+      );
+    }
+  );
+
+  // Aba ExperimentsTab independente (sem dependências)
+  const renderExperimentsTab = useCallback(
+    () => (
+      <MemoizedExperimentsTab
+        setSelectedExperiments={handleSetSelectedExperiments}
       />
     ),
-    graph: () => <GraphTab selectedExperiments={selectedExperiments} />,
-    notes: () => (
-      <>
-        <View>
-          {selectedExperiments.map((experiment, i) => {
-            if (!experiment.notes) return null;
-            return (
-              <View key={i}>
-                <Text style={styles.noteTitle}>{experiment.name}</Text>
-                <Text>{experiment.notes}</Text>
-              </View>
-            );
-          })}
-        </View>
-      </>
+    [handleSetSelectedExperiments] // Só depende do callback
+  );
+
+  // Aba GraphTab que depende de selectedExperiments
+  const renderGraphTab = useCallback(
+    () => <GraphTab selectedExperiments={selectedExperiments} />,
+    [selectedExperiments] // Depende dos experimentos selecionados
+  );
+
+  // Aba Notes que também depende de selectedExperiments
+  const renderNotesTab = useCallback(
+    () => (
+      <View>
+        {selectedExperiments.map((experiment, i) => {
+          if (!experiment.notes) return null;
+          return (
+            <View key={i}>
+              <Text style={styles.noteTitle}>{experiment.name}</Text>
+              <Text>{experiment.notes}</Text>
+            </View>
+          );
+        })}
+      </View>
     ),
+    [selectedExperiments] // Depende dos experimentos selecionados
+  );
+
+  // Mapeia as cenas para os callbacks individuais
+  const renderScene = BottomNavigation.SceneMap({
+    experiments: renderExperimentsTab,
+    graph: renderGraphTab,
+    notes: renderNotesTab,
   });
 
   // Function to calculate the mean graph from a list of TExperiment objects

@@ -14,8 +14,7 @@ import { isUserLogged } from "@/app/libs/login";
 import { useIsFocused } from "@react-navigation/native";
 
 interface ExperimentsTabProps {
-  selectedExperiments: TExperiment[];
-  setSelectedExperiments: React.Dispatch<React.SetStateAction<TExperiment[]>>;
+  setSelectedExperiments: (experiment: TExperiment, selected: boolean) => void;
 }
 
 const defaultExp: {
@@ -25,7 +24,6 @@ const defaultExp: {
 } = { user: [], local: [], team: [] };
 
 export default function ExperimentsTab({
-  selectedExperiments,
   setSelectedExperiments,
 }: ExperimentsTabProps) {
   const [experiments, setExperiments] = useState<{
@@ -37,13 +35,13 @@ export default function ExperimentsTab({
   const [noteExperiment, setNoteExperiment] = useState<TExperiment | null>(
     null
   );
+  const [user, setUser] = useState<string | null>(null);
   const isFocused = useIsFocused();
 
   const handleGetExperiments = async () => {
-    console.log("Get experiments");
-    const user = await isUserLogged();
-    console.log(user);
-    const exp = defaultExp;
+    const startTime = performance.now();
+
+    const exp = { ...defaultExp };
     if (user) {
       const [userExp, statusUserExp] = await getUserExperiments();
       const [teams, statusTeamsExp] = (await getTeams()) as [
@@ -60,9 +58,12 @@ export default function ExperimentsTab({
     }
     const localExp = await readEdsJsonFiles();
     exp.local = localExp;
-    console.log(exp);
 
-    setExperiments(exp);
+    setExperiments({ ...exp });
+    const endTime = performance.now(); // Fim da medição
+    console.log(
+      `handleGetExperiments levou ${(endTime - startTime).toFixed(2)}ms`
+    );
   };
 
   const handleOpenNotes = (experiment: TExperiment) => {
@@ -70,10 +71,21 @@ export default function ExperimentsTab({
     setModal(true);
   };
 
+  const handleGetUser = async () => {
+    setUser(await isUserLogged());
+  };
+
   useEffect(() => {
-    console.log(isFocused);
-    if (isFocused) handleGetExperiments();
+    console.log("Re-render");
+  }, []);
+
+  useEffect(() => {
+    if (isFocused) handleGetUser();
   }, [isFocused]);
+
+  useEffect(() => {
+    handleGetExperiments();
+  }, [user]);
 
   return (
     <>
@@ -82,7 +94,6 @@ export default function ExperimentsTab({
           <ExperimentsGroup
             experiments={experiments.local}
             handleOpenNotes={handleOpenNotes}
-            selectedExperiments={selectedExperiments}
             setSelectedExperiments={setSelectedExperiments}
             title="Local Experiments"
             type="local"
@@ -90,7 +101,6 @@ export default function ExperimentsTab({
           <ExperimentsGroup
             experiments={experiments.user}
             handleOpenNotes={handleOpenNotes}
-            selectedExperiments={selectedExperiments}
             setSelectedExperiments={setSelectedExperiments}
             title="User's Experiments"
             type="user"
@@ -98,7 +108,6 @@ export default function ExperimentsTab({
           <ExperimentsGroup
             experiments={experiments.team}
             handleOpenNotes={handleOpenNotes}
-            selectedExperiments={selectedExperiments}
             setSelectedExperiments={setSelectedExperiments}
             title="Teams' Experiments"
             type="team"
