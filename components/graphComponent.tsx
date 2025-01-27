@@ -232,7 +232,9 @@ export const GraphScreen: React.FC<{
 
   if (newExperiments.length == 0 && !actual)
     return (
-      <Text>No experiment data available for the selected experiments</Text>
+      <Text style={{ marginTop: 20, margin: "auto", padding: 10 }}>
+        No experiment data available for the selected experiments
+      </Text>
     );
   if (newExperiments.length == 0 && actual) return <></>;
   return (
