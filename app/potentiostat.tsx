@@ -108,6 +108,9 @@ export default function Potentiostat() {
         maxVoltage,
         step,
         delay,
+        timeIV,
+        cyclesNumber,
+        finalVoltage,
       },
     });
     if (fileUri) alert("Experiment Saved!");
@@ -123,6 +126,9 @@ export default function Potentiostat() {
       maxVoltage,
       step,
       delay,
+      timeIV,
+      cyclesNumber,
+      finalVoltage,
     };
 
     await saveUserExperiment(experiment);
@@ -139,6 +145,9 @@ export default function Potentiostat() {
       maxVoltage,
       step,
       delay,
+      timeIV,
+      cyclesNumber,
+      finalVoltage,
     };
 
     await saveTeamExperiment(experiment, expTeam);
