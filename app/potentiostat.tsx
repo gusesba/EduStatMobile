@@ -65,6 +65,11 @@ export default function Potentiostat() {
     setPoints([]);
     setExperimentName("");
     setShowModal(false);
+    setLastData("");
+    setTimeIV("");
+    setCyclesNumber("");
+    setFinalVoltage("");
+    setEstimatedTime(0);
   }, [isFocused]);
 
   useEffect(() => {
