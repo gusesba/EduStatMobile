@@ -34,10 +34,7 @@ export default function ExperimentsLine({
   };
 
   return (
-    <View
-      key={experiment.id}
-      style={selected ? styles.teamNameSelected : styles.teamName}
-    >
+    <View style={selected ? styles.teamNameSelected : styles.teamName}>
       <TouchableOpacity
         style={{ padding: 15, width: "70%" }}
         onPress={() => handlesetSelected(experiment)}

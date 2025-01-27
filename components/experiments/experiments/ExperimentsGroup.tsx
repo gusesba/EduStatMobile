@@ -27,6 +27,7 @@ export default function ExperimentsGroup({
         experiments.map((experiment) => {
           return (
             <ExperimentsLine
+              key={`${experiment.id}${experiment.name}`}
               experiment={experiment}
               handleOpenNotes={handleOpenNotes}
               setSelectedExperiments={setSelectedExperiments}

@@ -13,6 +13,9 @@ export type TParameters = {
   minv: number;
   step: number;
   delay: number;
+  timeIV: number;
+  cyclesNumber: number;
+  finalVoltage: number;
 };
 
 export type TGraphData = {
