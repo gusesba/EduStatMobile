@@ -2,6 +2,7 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Button, Text } from "react-native-paper";
 import AddTeamModal from "./modals/AddTeamModal";
+import { ScrollView } from "react-native-gesture-handler";
 
 interface TeamsTabProps {
   selectedTeam: string;
@@ -22,20 +23,18 @@ export default function TeamsTab({
 
   return (
     <>
-      <View style={styles.tabTeamContent}>
+      <ScrollView style={{ marginTop: 10 }}>
         {teams.length > 0 ? (
           teams.map((team) => {
-            if (team.id == selectedTeam)
-              return (
-                <View key={team.id} style={styles.teamNameSelected}>
-                  <Text>{team.name}</Text>
-                </View>
-              );
+            const selected = team.id == selectedTeam;
             return (
-              <View key={team.id} style={{ width: "100%" }}>
+              <View
+                key={team.id}
+                style={selected ? styles.teamNameSelected : styles.teamName}
+              >
                 <TouchableOpacity
                   onPress={() => setSelectedTeam(team.id)}
-                  style={styles.teamName}
+                  style={{ padding: 15, width: "70%" }}
                 >
                   <Text>{team.name}</Text>
                 </TouchableOpacity>
@@ -49,7 +48,7 @@ export default function TeamsTab({
             </Text>
           </View>
         )}
-      </View>
+      </ScrollView>
       <Button
         style={styles.addBtn}
         mode="contained"
@@ -75,11 +74,7 @@ const styles = StyleSheet.create({
     padding: 16,
     width: "100%",
   },
-  teamNameSelected: {
-    padding: 15,
-    backgroundColor: "#ddd",
-    width: "100%",
-  },
+
   addBtn: {
     position: "absolute",
     bottom: 20,
@@ -92,14 +87,24 @@ const styles = StyleSheet.create({
     marginTop: 15,
     fontWeight: "bold",
   },
-  teamName: {
-    padding: 15,
-    backgroundColor: "#eee",
-    width: "100%",
+  teamNameSelected: {
+    backgroundColor: "#ddd",
+    width: "90%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    margin: "auto",
+    borderRadius: 10,
+    marginBottom: 3,
   },
-  tabTeamContent: {
-    flex: 1,
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
+  teamName: {
+    backgroundColor: "#eee",
+    width: "90%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    margin: "auto",
+    borderRadius: 10,
+    marginBottom: 3,
   },
 });

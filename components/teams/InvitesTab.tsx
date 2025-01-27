@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { acceptInvite, getInvites } from "@/app/libs/teams";
+import { ScrollView } from "react-native-gesture-handler";
 
 interface InvitesTabProps {}
 
@@ -36,7 +37,7 @@ export default function InvitesTab({}: InvitesTabProps) {
 
   return (
     <>
-      <View style={styles.tabTeamContent}>
+      <ScrollView style={{ marginTop: 10 }}>
         {invites.length > 0 ? (
           invites.map((invite, index) => {
             return (
@@ -57,7 +58,7 @@ export default function InvitesTab({}: InvitesTabProps) {
             <Text style={styles.text}>You have no invites</Text>
           </View>
         )}
-      </View>
+      </ScrollView>
     </>
   );
 }
@@ -74,9 +75,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 15,
     backgroundColor: "#eee",
-    width: "100%",
-    marginBottom: 10,
-    borderRadius: 5,
+    width: "90%",
+    borderRadius: 10,
+    marginBottom: 3,
+    margin: "auto",
   },
   container2: {
     flex: 1,

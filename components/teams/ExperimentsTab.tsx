@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { getTeamExperiments } from "@/app/libs/experiments";
+import { ScrollView } from "react-native-gesture-handler";
 
 interface ExperimentsTabProps {
   selectedTeam: string;
@@ -23,12 +24,12 @@ export default function ExperimentsTab({ selectedTeam }: ExperimentsTabProps) {
 
   return (
     <>
-      <View style={styles.tabTeamContent}>
+      <ScrollView style={{ marginTop: 10 }}>
         {experiments.length > 0 ? (
           experiments.map((experiment, index) => {
             return (
               <View key={index} style={styles.teamName}>
-                <Text>{experiment.name}</Text>
+                <Text style={{ padding: 15 }}>{experiment.name}</Text>
               </View>
             );
           })
@@ -39,7 +40,7 @@ export default function ExperimentsTab({ selectedTeam }: ExperimentsTabProps) {
             </Text>
           </View>
         )}
-      </View>
+      </ScrollView>
     </>
   );
 }
@@ -57,9 +58,14 @@ const styles = StyleSheet.create({
     textAlign: "center", // Center the text content
   },
   teamName: {
-    padding: 15,
     backgroundColor: "#eee",
-    width: "100%",
+    width: "90%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    margin: "auto",
+    borderRadius: 10,
+    marginBottom: 3,
   },
   tabTeamContent: {
     flex: 1,

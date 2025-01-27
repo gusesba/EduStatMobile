@@ -3,6 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { getUsers } from "@/app/libs/teams";
 import AddMemberModal from "./modals/AddMemberModal";
+import { ScrollView } from "react-native-gesture-handler";
 
 interface MembersTabProps {
   selectedTeam: string;
@@ -30,12 +31,12 @@ export default function MembersTab({ selectedTeam }: MembersTabProps) {
 
   return (
     <>
-      <View style={styles.tabTeamContent}>
+      <ScrollView style={{ marginTop: 10 }}>
         {users.length > 0 ? (
           users.map((user, index) => {
             return (
               <View key={index} style={styles.teamName}>
-                <Text>{user.name}</Text>
+                <Text style={{ padding: 15 }}>{user.name}</Text>
               </View>
             );
           })
@@ -44,7 +45,7 @@ export default function MembersTab({ selectedTeam }: MembersTabProps) {
             <Text style={styles.text}>No users available on the team</Text>
           </View>
         )}
-      </View>
+      </ScrollView>
       {selectedTeam != "" && (
         <Button
           style={styles.addBtn}
@@ -71,9 +72,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   teamName: {
-    padding: 15,
     backgroundColor: "#eee",
-    width: "100%",
+    width: "90%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    margin: "auto",
+    borderRadius: 10,
+    marginBottom: 3,
   },
   container2: {
     flex: 1,
