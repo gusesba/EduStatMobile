@@ -6,11 +6,13 @@ import { createTeam } from "@/app/libs/teams";
 interface AddTeamModalProps {
   hideModal: () => void;
   visible: boolean;
+  getTeamsHandler: () => void;
 }
 
 export default function AddTeamModal({
   hideModal,
   visible,
+  getTeamsHandler,
 }: AddTeamModalProps) {
   const [teamName, setTeamName] = useState("");
 
@@ -23,6 +25,7 @@ export default function AddTeamModal({
       alert("Team created successfully!");
       setTeamName("");
       hideModal();
+      getTeamsHandler();
     } else {
       alert("Error Creating Team!");
     }

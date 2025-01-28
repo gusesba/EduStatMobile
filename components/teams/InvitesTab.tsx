@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
-import { acceptInvite, getInvites } from "@/app/libs/teams";
+import { acceptInvite, declineInvite, getInvites } from "@/app/libs/teams";
 import { ScrollView } from "react-native-gesture-handler";
 
 interface InvitesTabProps {}
@@ -31,6 +31,13 @@ export default function InvitesTab({}: InvitesTabProps) {
     } else alert("Error Accepting Invites!");
   };
 
+  const handleDeclineInvite = async (id: string) => {
+    const [_, status] = await declineInvite(id);
+    if (status == 200) {
+      getInvitesHandler();
+    } else alert("Error Declining Invites!");
+  };
+
   useEffect(() => {
     getInvitesHandler();
   }, []);
@@ -43,6 +50,13 @@ export default function InvitesTab({}: InvitesTabProps) {
             return (
               <View key={index} style={styles.inviteRow}>
                 <Text style={styles.inviteText}>{invite.Team.name}</Text>
+                <Button
+                  mode="contained"
+                  onPress={() => handleDeclineInvite(invite.id)}
+                  style={styles.acceptButton}
+                >
+                  Decline
+                </Button>
                 <Button
                   mode="contained"
                   onPress={() => handleAcceptInvite(invite.id)}
@@ -89,6 +103,7 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     flexShrink: 0,
+    marginLeft: 10,
   },
   inviteText: {
     flex: 1,

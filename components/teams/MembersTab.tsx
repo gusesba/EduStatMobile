@@ -1,21 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
-import { getUsers } from "@/app/libs/teams";
+import { Button, IconButton, Text } from "react-native-paper";
+import { deleteUserTeam, getUsers } from "@/app/libs/teams";
 import AddMemberModal from "./modals/AddMemberModal";
 import { ScrollView } from "react-native-gesture-handler";
+import { useIsFocused } from "@react-navigation/native";
+import { getValueForStore } from "@/app/libs/secureStore";
 
 interface MembersTabProps {
   selectedTeam: string;
 }
 
 export default function MembersTab({ selectedTeam }: MembersTabProps) {
-  const [users, setUsers] = useState<{ name: string }[]>([]);
+  const [users, setUsers] = useState<
+    { name: string; role: string; you: boolean; id: string }[]
+  >([]);
   const [visible, setVisible] = useState(false);
+  const [userId, setUserId] = useState<string | null>("");
+  const isFocused = useIsFocused();
+
+  const isAdmin = users.filter((user) => user.id == userId)[0]?.role == "ADMIN";
+
+  const fetchUserId = async () => {
+    setUserId(await getValueForStore("user_id"));
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchUserId();
+    }
+  }, [isFocused]);
 
   const showModal = () => setVisible(true);
   const hideModal = () => {
     setVisible(false);
+  };
+
+  const handleDelete = async (userId: string) => {
+    const [data, status] = await deleteUserTeam(selectedTeam, userId);
+
+    if (status != 200) {
+      alert("Error");
+    } else {
+      getTeamUsersHandler();
+    }
   };
 
   const getTeamUsersHandler = async () => {
@@ -36,7 +64,24 @@ export default function MembersTab({ selectedTeam }: MembersTabProps) {
           users.map((user, index) => {
             return (
               <View key={index} style={styles.teamName}>
-                <Text style={{ padding: 15 }}>{user.name}</Text>
+                <Text
+                  style={
+                    user.you
+                      ? { padding: 15, fontWeight: 700 }
+                      : { padding: 15 }
+                  }
+                >
+                  {user.name} - {user.role}
+                </Text>
+                {isAdmin && user.role != "ADMIN" && (
+                  <IconButton
+                    onPress={() => {
+                      handleDelete(user.id);
+                    }}
+                    style={{ height: 20, margin: 0 }}
+                    icon="delete"
+                  />
+                )}
               </View>
             );
           })
@@ -46,7 +91,7 @@ export default function MembersTab({ selectedTeam }: MembersTabProps) {
           </View>
         )}
       </ScrollView>
-      {selectedTeam != "" && (
+      {selectedTeam != "" && isAdmin && (
         <Button
           style={styles.addBtn}
           mode="contained"

@@ -19,41 +19,23 @@ export default function Teams() {
     { key: "members", title: "Members", icon: "account" },
     { key: "experiments", title: "Experiments", icon: "flask" },
   ]);
-  const [teams, setTeams] = useState<{ name: string; id: string }[]>([]);
   const [userLogged, setUserLogged] = useState<string | null | undefined>(null);
   const isFocused = useIsFocused();
 
   useEffect(() => {
-    isUserLogged().then((a) => {
-      setUserLogged(a);
-    });
-    setIndex(0);
-    setSelectedTeam("");
-    setTeams([]);
-  }, [isFocused]);
-
-  useEffect(() => {
-    if (userLogged) {
-      getTeamsHandler();
+    if (isFocused) {
+      isUserLogged().then((a) => {
+        setUserLogged(a);
+      });
+      setIndex(0);
+      setSelectedTeam("");
     }
-  }, [userLogged, isFocused]);
-
-  const getTeamsHandler = async () => {
-    const [teams, status] = await getTeams();
-
-    if (status == 200) {
-      setTeams(teams);
-    } else alert("Error Getting Teams!");
-  };
+  }, [isFocused]);
 
   // Define what each tab renders
   const renderScene = BottomNavigation.SceneMap({
     teams: () => (
-      <TeamsTab
-        selectedTeam={selectedTeam}
-        setSelectedTeam={setSelectedTeam}
-        teams={teams}
-      />
+      <TeamsTab selectedTeam={selectedTeam} setSelectedTeam={setSelectedTeam} />
     ),
     invites: () => <InvitesTab />,
     members: () => <MembersTab selectedTeam={selectedTeam} />,
