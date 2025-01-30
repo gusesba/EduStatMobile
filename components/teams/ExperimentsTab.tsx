@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { Text } from "react-native-paper";
-import { getTeamExperiments } from "@/app/libs/experiments";
+import { IconButton, Text } from "react-native-paper";
+import {
+  deleteTeamExperiment,
+  getTeamExperiments,
+} from "@/app/libs/experiments";
 import { ScrollView } from "react-native-gesture-handler";
 
 interface ExperimentsTabProps {
@@ -9,13 +12,21 @@ interface ExperimentsTabProps {
 }
 
 export default function ExperimentsTab({ selectedTeam }: ExperimentsTabProps) {
-  const [experiments, setExperiments] = useState<{ name: string }[]>([]);
+  const [experiments, setExperiments] = useState<
+    { name: string; id: string }[]
+  >([]);
 
   const getTeamExperimentsHandler = async () => {
     const [experiments, status] = await getTeamExperiments(selectedTeam);
     if (status == 200) {
       setExperiments(experiments);
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteTeamExperiment(id, selectedTeam);
+
+    getTeamExperimentsHandler();
   };
 
   useEffect(() => {
@@ -30,6 +41,11 @@ export default function ExperimentsTab({ selectedTeam }: ExperimentsTabProps) {
             return (
               <View key={index} style={styles.teamName}>
                 <Text style={{ padding: 15 }}>{experiment.name}</Text>
+                <IconButton
+                  onPress={() => handleDelete(experiment.id)}
+                  style={{ height: 20, margin: 0 }}
+                  icon="delete"
+                />
               </View>
             );
           })

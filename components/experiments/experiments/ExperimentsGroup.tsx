@@ -9,6 +9,7 @@ interface ExperimentsGroupProps {
   experiments: TExperiment[];
   setSelectedExperiments: (experiment: TExperiment, selected: boolean) => void;
   handleOpenNotes: (experiment: TExperiment) => void;
+  handleGetExperiments: () => void;
   title: string;
   type: string;
 }
@@ -17,6 +18,7 @@ export default function ExperimentsGroup({
   experiments,
   setSelectedExperiments,
   handleOpenNotes,
+  handleGetExperiments,
   title,
   type,
 }: ExperimentsGroupProps) {
@@ -30,6 +32,7 @@ export default function ExperimentsGroup({
               key={`${experiment.id}${experiment.name}`}
               experiment={experiment}
               handleOpenNotes={handleOpenNotes}
+              handleGetExperiments={handleGetExperiments}
               setSelectedExperiments={setSelectedExperiments}
               type={type}
             />

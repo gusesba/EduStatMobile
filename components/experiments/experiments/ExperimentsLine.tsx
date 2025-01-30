@@ -7,6 +7,7 @@ import { TExperiment } from "@/types/experiments";
 interface ExperimentsLineProps {
   experiment: TExperiment;
   setSelectedExperiments: (experiment: TExperiment, selected: boolean) => void;
+  handleGetExperiments: () => void;
   handleOpenNotes: (experiment: TExperiment) => void;
   type: string;
 }
@@ -14,18 +15,18 @@ interface ExperimentsLineProps {
 export default function ExperimentsLine({
   experiment,
   setSelectedExperiments,
+  handleGetExperiments,
   handleOpenNotes,
   type,
 }: ExperimentsLineProps) {
   const [selected, setSelected] = useState(false);
-  const handleDelete = (id: string, type: string) => {
+  const handleDelete = async (id: string, type: string) => {
     if (type == "local") {
-      deleteJsonFile(id);
+      await deleteJsonFile(id);
     } else if (type == "user") {
-      deleteUserExperiment(id);
-    } else if (type == "team") {
-      alert("Not implemented");
+      await deleteUserExperiment(id);
     }
+    handleGetExperiments();
   };
 
   const handlesetSelected = (experiment: TExperiment) => {
@@ -47,11 +48,13 @@ export default function ExperimentsLine({
           style={{ height: 20, margin: 0 }}
           icon="pen"
         />
-        <IconButton
-          onPress={() => handleDelete(experiment.id, type)}
-          style={{ height: 20, margin: 0 }}
-          icon="delete"
-        />
+        {type != "team" && (
+          <IconButton
+            onPress={() => handleDelete(experiment.id, type)}
+            style={{ height: 20, margin: 0 }}
+            icon="delete"
+          />
+        )}
       </View>
     </View>
   );

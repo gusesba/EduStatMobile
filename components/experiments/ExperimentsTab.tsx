@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import {
   getTeamExperiments,
@@ -38,9 +38,9 @@ export default function ExperimentsTab({
   const [user, setUser] = useState<string | null>(null);
   const isFocused = useIsFocused();
 
-  const handleGetExperiments = async () => {
+  const handleGetExperiments = useCallback(async () => {
     const startTime = performance.now();
-
+    console.log("teste");
     const exp = { ...defaultExp };
     if (user) {
       const [userExp, statusUserExp] = await getUserExperiments();
@@ -48,11 +48,11 @@ export default function ExperimentsTab({
         [{ id: string }],
         number
       ];
-      for (var team of teams) {
+      for (const team of teams) {
         const [teamExp, _] = await getTeamExperiments(team.id);
         exp.team = exp.team.concat(teamExp);
       }
-      if (statusUserExp == 200) exp.user = userExp;
+      if (statusUserExp === 200) exp.user = userExp;
     } else {
       exp.user = [];
       exp.team = [];
@@ -61,11 +61,11 @@ export default function ExperimentsTab({
     exp.local = localExp;
 
     setExperiments({ ...exp });
-    const endTime = performance.now(); // Fim da medição
+    const endTime = performance.now();
     console.log(
       `handleGetExperiments levou ${(endTime - startTime).toFixed(2)}ms`
     );
-  };
+  }, [user]);
 
   const handleOpenNotes = (experiment: TExperiment) => {
     setNoteExperiment(experiment);
@@ -81,7 +81,10 @@ export default function ExperimentsTab({
   }, []);
 
   useEffect(() => {
-    if (isFocused) handleGetUser();
+    if (isFocused) {
+      handleGetUser();
+      handleGetExperiments;
+    }
   }, [isFocused]);
 
   useEffect(() => {
@@ -95,6 +98,7 @@ export default function ExperimentsTab({
           <ExperimentsGroup
             experiments={experiments.local}
             handleOpenNotes={handleOpenNotes}
+            handleGetExperiments={handleGetExperiments}
             setSelectedExperiments={setSelectedExperiments}
             title="Local Experiments"
             type="local"
@@ -102,6 +106,7 @@ export default function ExperimentsTab({
           <ExperimentsGroup
             experiments={experiments.user}
             handleOpenNotes={handleOpenNotes}
+            handleGetExperiments={handleGetExperiments}
             setSelectedExperiments={setSelectedExperiments}
             title="User's Experiments"
             type="user"
@@ -109,6 +114,7 @@ export default function ExperimentsTab({
           <ExperimentsGroup
             experiments={experiments.team}
             handleOpenNotes={handleOpenNotes}
+            handleGetExperiments={handleGetExperiments}
             setSelectedExperiments={setSelectedExperiments}
             title="Teams' Experiments"
             type="team"
