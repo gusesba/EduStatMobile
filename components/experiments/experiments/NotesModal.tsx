@@ -12,12 +12,14 @@ interface NotesModalProps {
   modal: boolean;
   setModal: React.Dispatch<React.SetStateAction<boolean>>;
   noteExperiment: TExperiment | null;
+  handleGetExperiments: () => void;
 }
 
 export default function NotesModal({
   modal,
   setModal,
   noteExperiment,
+  handleGetExperiments,
 }: NotesModalProps) {
   const [note, setNote] = useState("");
 
@@ -26,12 +28,13 @@ export default function NotesModal({
     setModal(false);
   };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
+    console.log("teste");
     if (noteExperiment) {
       if (noteExperiment.userId)
-        saveUserNotes(noteExperiment.id, note + "      ");
+        await saveUserNotes(noteExperiment.id, note + "      ");
       else if (noteExperiment.teamId)
-        saveTeamNotes(
+        await saveTeamNotes(
           noteExperiment.id,
           note + "       ",
           noteExperiment.teamId
@@ -43,8 +46,9 @@ export default function NotesModal({
             }\n[${new Date().toISOString()}] - ${"Local Note"}\n${note}\n---------------------------------\n`
           : `[${new Date().toISOString()}] - ${"Local Note"}\n${note}\n---------------------------------\n`;
         noteExperiment.notes = notes;
-        saveJsonToFile(noteExperiment.name, noteExperiment);
+        await saveJsonToFile(noteExperiment.name, noteExperiment);
       }
+      handleGetExperiments();
     }
   };
 

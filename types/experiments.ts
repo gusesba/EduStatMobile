@@ -9,8 +9,8 @@ export type TExperiment = {
 };
 
 export type TParameters = {
-  maxV: number;
-  minv: number;
+  maxVoltage: number;
+  minVoltage: number;
   step: number;
   delay: number;
   timeIV: number;

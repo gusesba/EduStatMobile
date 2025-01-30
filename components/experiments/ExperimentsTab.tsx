@@ -119,6 +119,7 @@ export default function ExperimentsTab({
         modal={modal}
         noteExperiment={noteExperiment}
         setModal={setModal}
+        handleGetExperiments={handleGetExperiments}
       />
     </>
   );

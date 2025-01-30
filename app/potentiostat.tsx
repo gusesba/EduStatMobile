@@ -72,6 +72,8 @@ export default function Potentiostat() {
     setEstimatedTime(0);
   }, [isFocused]);
 
+  const isRunning = estimatedTime > 0;
+
   useEffect(() => {
     if (userLogged) {
       getTeamsHandler();
@@ -348,7 +350,11 @@ export default function Potentiostat() {
           return alert("Min Voltage must be less than Max Voltage!");
 
         const estimatedTimeCalc =
-          (2 * parseInt(correctedStep) * parseFloat(correctedDelay)) / 1000;
+          (2 *
+            parseInt(correctedStep) *
+            parseFloat(correctedDelay) *
+            parseInt(correctedCycles)) /
+          1000;
         setEstimatedTime(estimatedTimeCalc + 5);
         // Criar mensagem e enviar
         const encodedMessage = Base64.encode(
@@ -380,7 +386,11 @@ export default function Potentiostat() {
       <ScrollView>
         <View>
           <View style={styles.containerButtons}>
-            <Button mode="contained" onPress={scanForPeripherals}>
+            <Button
+              disabled={isRunning}
+              mode="contained"
+              onPress={scanForPeripherals}
+            >
               {connectedDevice ? "Disconnect" : "Connect"}
             </Button>
           </View>
@@ -390,8 +400,8 @@ export default function Potentiostat() {
             <View>
               <View style={styles.containerScreen2}>
                 <Text className="text-center mb-2 text-lg">
-                  Fill in all the parameters for measurement with the potentiostat.
-                  After this, simply click "Start Measurement."
+                  Fill in all the parameters for measurement with the
+                  potentiostat. After this, simply click "Start Measurement."
                 </Text>
                 <View style={styles.inputContainer}>
                   <View style={styles.inputWrapper}>
@@ -432,7 +442,9 @@ export default function Potentiostat() {
                       />
                     </View>
                     <View style={{ width: "50%" }}>
-                      <Text style={{ color: "gray" }}>Delay [50 ms, 500 ms]</Text>
+                      <Text style={{ color: "gray" }}>
+                        Delay [50 ms, 500 ms]
+                      </Text>
                       <TextInput
                         style={styles.textInput2}
                         placeholder="Delay"
@@ -490,11 +502,17 @@ export default function Potentiostat() {
                         <>
                           <Text className="text-color2">
                             Voltage:{" "}
-                            {parseFloat(lastData.split("\n")[0] || "0").toFixed(8)}V
+                            {parseFloat(lastData.split("\n")[0] || "0").toFixed(
+                              8
+                            )}
+                            V
                           </Text>
                           <Text className="text-color2">
                             Current:{" "}
-                            {parseFloat(lastData.split("\n")[1] || "0").toFixed(8)}A
+                            {parseFloat(lastData.split("\n")[1] || "0").toFixed(
+                              8
+                            )}
+                            A
                           </Text>
                         </>
                       ) : (
@@ -504,7 +522,10 @@ export default function Potentiostat() {
                       )}
                       {estimatedTime > 0 && (
                         <>
-                          <Text> Estimated time remaining: {estimatedTime}s</Text>
+                          <Text>
+                            {" "}
+                            Estimated time remaining: {estimatedTime}s
+                          </Text>
                         </>
                       )}
                     </View>
@@ -531,6 +552,7 @@ export default function Potentiostat() {
                 <View style={styles.buttonContainer}>
                   {points.length > 0 && (
                     <Button
+                      disabled={isRunning}
                       mode="contained"
                       onPress={() => {
                         setPoints([]);
@@ -540,10 +562,20 @@ export default function Potentiostat() {
                       Clear
                     </Button>
                   )}
-                  <Button mode="contained" onPress={sendMessageToDevice}>
+                  {points.length > 0 ? null : (
+                    <Button
+                      disabled={isRunning}
+                      mode="contained"
+                      onPress={sendMessageToDevice}
+                    >
                     Start Measurement
                   </Button>
-                  <Button mode="contained" onPress={handleShowModal}>
+                  )}
+                  <Button
+                    disabled={isRunning}
+                    mode="contained"
+                    onPress={handleShowModal}
+                  >
                     Save
                   </Button>
                 </View>

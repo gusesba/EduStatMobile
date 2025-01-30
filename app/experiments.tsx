@@ -86,11 +86,11 @@ export default function Experiment() {
                 <View style={styles.parametersList}>
                   <Parameter
                     label="Max Voltage"
-                    value={`${experiment.parameters.maxV} V`}
+                    value={`${experiment.parameters.maxVoltage} V`}
                   />
                   <Parameter
                     label="Min Voltage"
-                    value={`${experiment.parameters.minv} V`}
+                    value={`${experiment.parameters.minVoltage} V`}
                   />
                   <Parameter
                     label="Step"
