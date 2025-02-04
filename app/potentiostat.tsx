@@ -39,6 +39,8 @@ export default function Potentiostat() {
   const [delay, setDelay] = useState<string>("");
   const [finalVoltage, setFinalVoltage] = useState<string>("");
   const [timeIV, setTimeIV] = useState<string>("");
+  const [calibrationK, setCalibrationK] = useState("1.0");
+  const [calibrationOffset, setCalibrationOffset] = useState("0.0");
   const [cyclesNumber, setCyclesNumber] = useState<string>("");
   const [points, setPoints] = useState<{ x: number; y: number }[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -306,6 +308,9 @@ export default function Potentiostat() {
         const correctedTimeIV = timeIV.split(",")[0].split(".")[0];
         const correctedFinalVoltage = finalVoltage.replace(",", ".");
         const correctedCycles = cyclesNumber.split(",")[0].split(".")[0];
+        const correctedCalibrationK = calibrationK == "" ? "1.0" : calibrationK;
+        const correctedCalibrationOffset =
+          calibrationOffset == "" ? "0.0" : calibrationOffset;
 
         // Atualizar o estado (mas não depender dele imediatamente)
         setMinVoltage(correctedMinVoltage);
@@ -315,6 +320,8 @@ export default function Potentiostat() {
         setTimeIV(correctedTimeIV);
         setFinalVoltage(correctedFinalVoltage);
         setCyclesNumber(correctedCycles);
+        setCalibrationK(correctedCalibrationK);
+        setCalibrationOffset(correctedCalibrationOffset);
 
         // Verificações com os valores corrigidos
         if (
@@ -324,7 +331,9 @@ export default function Potentiostat() {
           correctedDelay === "" ||
           correctedFinalVoltage === "" ||
           correctedCycles === "" ||
-          correctedTimeIV === ""
+          correctedTimeIV === "" ||
+          correctedCalibrationK === "" ||
+          correctedCalibrationOffset === ""
         )
           return alert("Please fill all fields!");
 
@@ -332,6 +341,14 @@ export default function Potentiostat() {
           parseFloat(correctedMinVoltage) < -2 ||
           parseFloat(correctedMinVoltage) > 2
         )
+          return alert("Min Voltage must be between -2 and 2!");
+
+        if (
+          parseFloat(correctedFinalVoltage) < -2 ||
+          parseFloat(correctedFinalVoltage) > 2
+        )
+          return alert("Final Voltage must be between -2 and 2!");
+
           return alert("Min Voltage must be between -2 and 2!");
 
         if (
@@ -358,7 +375,7 @@ export default function Potentiostat() {
         setEstimatedTime(estimatedTimeCalc + 5);
         // Criar mensagem e enviar
         const encodedMessage = Base64.encode(
-          `${correctedMinVoltage} ${correctedMaxVoltage} ${correctedStep} ${correctedDelay} ${correctedCycles} ${correctedTimeIV} ${correctedFinalVoltage} 1`
+          `${correctedMinVoltage} ${correctedMaxVoltage} ${correctedStep} ${correctedDelay} ${correctedCycles} ${correctedTimeIV} ${correctedFinalVoltage} 1 ${correctedCalibrationK} ${correctedCalibrationOffset}`
         );
         //startSimulation();
         await connectedDevice.writeCharacteristicWithResponseForService(
