@@ -33,7 +33,11 @@ type RootStackParamList = {
 };
 
 const videoSources = {
-  potentiostat: require("@/assets/videos/potentiostat_help.mp4"),
+  chat: require("@/assets/videos/chat.mp4"),
+  experiments: require("@/assets/videos/experiments.mp4"),
+  potentiostat: require("@/assets/videos/potentiostat.mp4"),
+  simulation: require("@/assets/videos/simulation.mp4"),
+  teams: require("@/assets/videos/teams.mp4"),
 
   // Adicione outros vídeos conforme necessário
 };
@@ -127,6 +131,7 @@ export default function AuthenticatedDrawer() {
         component={Experiments}
         options={{
           title: "Experiments",
+          headerRight: () => <HelpButton videoKey="experiments" />,
           drawerIcon: ({ color, size }) => (
             <Ionicons name="beaker-outline" color={color} size={size} />
           ),
@@ -138,6 +143,7 @@ export default function AuthenticatedDrawer() {
         component={Chatbot}
         options={{
           title: "EduChat",
+          headerRight: () => <HelpButton videoKey="chat" />,
           drawerIcon: ({ color, size }) => (
             <Ionicons name="chatbubbles-outline" color={color} size={size} />
           ),
@@ -148,6 +154,7 @@ export default function AuthenticatedDrawer() {
         component={Simulation}
         options={{
           title: "Simulation",
+          headerRight: () => <HelpButton videoKey="simulation" />,
           drawerIcon: ({ color, size }) => (
             <Ionicons name="cube-outline" color={color} size={size} />
           ),
@@ -168,6 +175,7 @@ export default function AuthenticatedDrawer() {
         component={Teams}
         options={{
           title: "Teams",
+          headerRight: () => <HelpButton videoKey="teams" />,
           drawerIcon: ({ color, size }) => (
             <Ionicons name="people-outline" color={color} size={size} />
           ),

@@ -9,6 +9,7 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+assets/videos/
 *-lock.json
 pnpm-lock.yaml
 # macOS
