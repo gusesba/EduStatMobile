@@ -479,6 +479,28 @@ export default function Potentiostat() {
                     </View>
                   </View>
                   <View style={styles.inputWrapper}>
+                    <View style={{ width: "50%" }}>
+                      <Text style={{ color: "gray" }}>CalibrationK</Text>
+                      <TextInput
+                        style={styles.textInput2}
+                        placeholder="CalibrationK"
+                        keyboardType="numeric"
+                        value={calibrationK}
+                        onChangeText={setCalibrationK}
+                      />
+                    </View>
+                    <View style={{ width: "50%" }}>
+                      <Text style={{ color: "gray" }}>Calibration Offset</Text>
+                      <TextInput
+                        style={styles.textInput2}
+                        placeholder="Calibration Offset"
+                        keyboardType="numeric"
+                        value={calibrationOffset}
+                        onChangeText={setCalibrationOffset}
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.inputWrapper}>
                     <View style={{ width: "104%" }}>
                       <Text style={{ color: "gray" }}>Number of Cycles</Text>
                       <TextInput
