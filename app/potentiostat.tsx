@@ -220,6 +220,7 @@ export default function Potentiostat() {
 
     try {
       const dataInput = Base64.decode(characteristic.value);
+      const isEqual = dataInput == lastData;
       setLastData(dataInput);
       // Divida a string por linhas
       const lines = dataInput.split("\n"); // ["1.234", "5.678"]
@@ -229,22 +230,23 @@ export default function Potentiostat() {
         x: parseFloat(lines[0]), // Converte para número
         y: parseFloat(lines[1]), // Converte para número
       };
+      if (!isEqual) {
+        setPoints((state) => {
+          // Combine o novo ponto com os últimos 10 pontos existentes
+          //const lastTenPoints = state.slice(-10); // Pega os últimos 10 pontos
+          //const allPoints = [...lastTenPoints, newPoint]; // Adiciona o novo ponto
 
-      setPoints((state) => {
-        // Combine o novo ponto com os últimos 10 pontos existentes
-        //const lastTenPoints = state.slice(-10); // Pega os últimos 10 pontos
-        //const allPoints = [...lastTenPoints, newPoint]; // Adiciona o novo ponto
+          // Calcule as médias de x e y
+          // const avgX = allPoints.reduce((sum, point) => sum + point.x, 0) / allPoints.length;
+          // const avgY = allPoints.reduce((sum, point) => sum + point.y, 0) / allPoints.length;
 
-        // Calcule as médias de x e y
-        // const avgX = allPoints.reduce((sum, point) => sum + point.x, 0) / allPoints.length;
-        // const avgY = allPoints.reduce((sum, point) => sum + point.y, 0) / allPoints.length;
+          // Cria o ponto médio
+          // const averagedPoint = { x: avgX, y: avgY };
 
-        // Cria o ponto médio
-        // const averagedPoint = { x: avgX, y: avgY };
-
-        // Adiciona o ponto médio ao estado
-        return [...state, newPoint];
-      });
+          // Adiciona o ponto médio ao estado
+          return [...state, newPoint];
+        });
+      }
     } catch (error) {
       alert(JSON.stringify(error));
     }
@@ -348,8 +350,6 @@ export default function Potentiostat() {
           parseFloat(correctedFinalVoltage) > 2
         )
           return alert("Final Voltage must be between -2 and 2!");
-
-          return alert("Min Voltage must be between -2 and 2!");
 
         if (
           parseFloat(correctedMaxVoltage) < -2 ||
@@ -575,14 +575,14 @@ export default function Potentiostat() {
                   experiments={
                     points.length > 1
                       ? [
-                        {
-                          id: "Experimento Atual",
-                          name: "Experimento Atual",
-                          graphData: {
-                            points,
-                          },
-                        } as TExperiment,
-                      ]
+                          {
+                            id: "Experimento Atual",
+                            name: "Experimento Atual",
+                            graphData: {
+                              points,
+                            },
+                          } as TExperiment,
+                        ]
                       : []
                   }
                   actual={true}
@@ -607,8 +607,8 @@ export default function Potentiostat() {
                       mode="contained"
                       onPress={sendMessageToDevice}
                     >
-                    Start Measurement
-                  </Button>
+                      Start Measurement
+                    </Button>
                   )}
                   <Button
                     disabled={isRunning}
