@@ -220,37 +220,39 @@ export default function Potentiostat() {
 
     try {
       const dataInput = Base64.decode(characteristic.value);
-      const isEqual = dataInput == lastData;
+      if (!dataInput) {
+        console.warn("Decoded data is empty or invalid");
+        return;
+      }
+
+      const isEqual = dataInput === lastData;
       setLastData(dataInput);
-      // Divida a string por linhas
-      const lines = dataInput.split("\n"); // ["1.234", "5.678"]
 
-      // Extraia os valores e crie o objeto atual
-      const newPoint = {
-        x: parseFloat(lines[0]), // Converte para número
-        y: parseFloat(lines[1]), // Converte para número
-      };
+      const lines = dataInput.split("\n");
+
+      if (lines.length < 2) {
+        console.warn("Received data does not contain two values");
+        return;
+      }
+
+      const x = parseFloat(lines[0]);
+      const y = parseFloat(lines[1]);
+
+      if (isNaN(x) || isNaN(y)) {
+        console.warn(`Invalid numbers received: x=${lines[0]}, y=${lines[1]}`);
+        return;
+      }
+
+      const newPoint = { x, y };
+
       if (!isEqual && !isNaN(newPoint.x) && !isNaN(newPoint.y)) {
-        setPoints((state) => {
-          // Combine o novo ponto com os últimos 10 pontos existentes
-          //const lastTenPoints = state.slice(-10); // Pega os últimos 10 pontos
-          //const allPoints = [...lastTenPoints, newPoint]; // Adiciona o novo ponto
-
-          // Calcule as médias de x e y
-          // const avgX = allPoints.reduce((sum, point) => sum + point.x, 0) / allPoints.length;
-          // const avgY = allPoints.reduce((sum, point) => sum + point.y, 0) / allPoints.length;
-
-          // Cria o ponto médio
-          // const averagedPoint = { x: avgX, y: avgY };
-
-          // Adiciona o ponto médio ao estado
-          return [...state, newPoint];
-        });
+        setPoints((state) => [...state, newPoint]);
       }
     } catch (error) {
-      alert(JSON.stringify(error));
+      console.error("Error processing data:", error);
     }
   };
+
   // const startSimulation = () => {
   //   if (intervalRef.current) return; // Evita múltiplas execuções
 
@@ -575,14 +577,14 @@ export default function Potentiostat() {
                   experiments={
                     points.length > 1
                       ? [
-                          {
-                            id: "Experimento Atual",
-                            name: "Experimento Atual",
-                            graphData: {
-                              points,
-                            },
-                          } as TExperiment,
-                        ]
+                        {
+                          id: "Experimento Atual",
+                          name: "Experimento Atual",
+                          graphData: {
+                            points,
+                          },
+                        } as TExperiment,
+                      ]
                       : []
                   }
                   actual={true}
