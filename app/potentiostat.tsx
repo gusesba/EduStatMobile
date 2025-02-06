@@ -230,7 +230,7 @@ export default function Potentiostat() {
         x: parseFloat(lines[0]), // Converte para número
         y: parseFloat(lines[1]), // Converte para número
       };
-      if (!isEqual) {
+      if (!isEqual && !isNaN(newPoint.x) && !isNaN(newPoint.y)) {
         setPoints((state) => {
           // Combine o novo ponto com os últimos 10 pontos existentes
           //const lastTenPoints = state.slice(-10); // Pega os últimos 10 pontos
